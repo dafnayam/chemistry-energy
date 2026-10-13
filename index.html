@@ -150,6 +150,8 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .homecard small{color:var(--muted)}
 .thermobar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--heat),var(--cold))}
 
+.mediabox video{display:block;width:100%;max-width:360px;max-height:70vh;margin:0 auto;border-radius:12px;background:#000;aspect-ratio:9/16;object-fit:contain}
+.mediabox audio{width:100%}
 /* ---------- mind map ---------- */
 .mmwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
 .mm,.mm ul{list-style:none;margin:0;padding:0}
@@ -196,6 +198,15 @@ textarea{width:100%;min-height:80px;resize:vertical}
   <main id="view" dir="rtl"></main>
 </div>
 <script>
+const MEDIA_BASE = location.protocol === 'file:' ? 'https://noynovik-maker.github.io/chemistry-energy/' : '';
+const M = n => MEDIA_BASE + 'media/' + encodeURI(n);
+const PODCAST = () => `<div class="widget mediabox"><div class="wtitle"><span class="wtag">פודקאסט</span><h3>איך הקצב שולט באנרגיה בכימיה</h3></div>
+<p>שיחה של כ-19 דקות על אנרגיה וקצב. אפשר להאזין בדרך הביתה או תוך כדי חזרה למבחן.</p>
+<audio controls preload="none" src="${M('איך הקצב שולט באנרגיה בכימיה.m4a')}">הדפדפן לא תומך בהשמעת שמע.</audio>
+<p class="caption">בזמן ההאזנה, נסו לענות לעצמכם: מה ההבדל בין "כמה אנרגיה" (ΔH) לבין "כמה מהר" (קצב)? ואיזו דוגמה מהפודקאסט הכי עזרה לכם להבין?</p></div>`;
+const VIDEO = () => `<div class="widget mediabox"><div class="wtitle"><span class="wtag">סרטון</span><h3>למה גפרורים לא נדלקים מעצמם?</h3></div>
+<video controls playsinline preload="metadata" poster="${M('גפרורים - תמונה.jpg')}" src="${M('למה גפרורים לא נדלקים מעצמם.mp4')}">הדפדפן לא תומך בהצגת וידאו.</video>
+<p class="caption">סרטון של כדקה. אחרי הצפייה: מה החיכוך נותן לגפרור? איך זה קשור לאנרגיית השפעול שנלמד בהמשך הפרק?</p></div>`;
 const YT = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
 const vid = (arr) => '<div class="links">' + arr.map(([t,q]) => `<a href="${YT(q)}" target="_blank" rel="noopener">${t}</a>`).join('') + '</div>';
 
@@ -432,6 +443,7 @@ quiz:[
 id:'rate', title:'קצב תגובה', short:'התנגשויות, אנרגיית שפעול, זרז',
 html:`
 <div class="hook"><b>שאלת פתיחה</b><p>שריפת נייר באוויר היא תגובה אקסותרמית מאוד. אז למה הספר שלכם לא בוער מעצמו על המדף?</p></div>
+${VIDEO()}
 <section class="blk"><h2>מהו קצב תגובה?</h2>
 <p>קצב התגובה מתאר באיזו מהירות נצרכים המגיבים ונוצרים התוצרים: שינוי בכמות (או בריכוז) של חומר ביחידת זמן.</p>
 </section>
@@ -456,6 +468,7 @@ html:`
 <p><b>זרז</b> הוא חומר שמגביר את קצב התגובה ואינו נצרך בה. הוא מאפשר מסלול תגובה חלופי עם <b>אנרגיית שפעול נמוכה יותר</b>.</p>
 <div class="warn"><h3>שימו לב</h3><p>זרז <b>לא משנה את ΔH</b>. רמות המגיבים והתוצרים נשארות במקומן, רק הפסגה יורדת. בגרף שלמעלה אפשר להפעיל את מתג הזרז ולראות זאת.</p></div>
 </section>
+${PODCAST()}
 <section class="blk"><h3>סרטונים להעמקה</h3>${vid([['מודל ההתנגשויות ואנרגיית שפעול','קצב תגובה מודל ההתנגשויות אנרגיית שפעול'],['Collision theory and catalysts','collision theory activation energy catalyst animation']])}</section>
 `,
 quiz:[
@@ -1038,6 +1051,7 @@ function renderHome() {
   <section class="panel"><h2>לפני שמתחילים</h2>
   <label for="sname" style="font-weight:700">איך קוראים לכם? <input id="sname" type="text" autocomplete="given-name" value="${(S.name || '').replace(/"/g, '&quot;')}" placeholder="שם פרטי"></label>
   <p style="font-weight:700">איך אתם מרגישים לקראת הנושא?</p><div class="moods" id="smood"></div><div id="smreply"></div></section>
+  ${PODCAST()}
   <section class="blk"><h2>איך עובדים כאן</h2>
   <ol><li>קוראים את ההסבר ומפעילים את ההדמיות. אל תדלגו עליהן; הן חלק מההסבר.</li>
   <li>לפני הבוחן מסמנים כמה אתם בטוחים בעצמכם.</li>
