@@ -149,6 +149,41 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .homecard .n{font-family:var(--f-mono);font-size:.8rem;color:var(--heat)}
 .homecard small{color:var(--muted)}
 .thermobar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--heat),var(--cold))}
+
+/* ---------- mind map ---------- */
+.mmwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.mm,.mm ul{list-style:none;margin:0;padding:0}
+.mm ul{padding-inline-start:26px;position:relative}
+.mm li{position:relative;margin:0;padding-block:5px}
+.mm ul>li::before{content:"";position:absolute;inset-inline-start:-16px;top:0;bottom:0;border-inline-start:2px solid var(--line)}
+.mm ul>li:last-child::before{bottom:auto;height:22px}
+.mm ul>li::after{content:"";position:absolute;inset-inline-start:-16px;top:22px;width:12px;border-top:2px solid var(--line)}
+.mnode{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mnode span,.mtog{font:inherit;border-radius:10px;padding:5px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-align:right}
+.mtog{cursor:pointer;font-weight:700}
+.mtog::before{content:"+";display:inline-block;width:1.1em;color:var(--cold);font-family:var(--f-mono)}
+.mtog[aria-expanded="true"]::before{content:"−"}
+.d0>.mnode .mtog{font-family:var(--f-display);font-weight:400;font-size:1.25rem;background:linear-gradient(90deg,var(--heat-soft),var(--cold-soft));border-color:transparent}
+.d1>.mnode .mtog{background:var(--cold-soft);border-color:transparent}
+.d2>.mnode span,.d3>.mnode span{font-size:.95rem}
+.mgo{font:inherit;font-size:.8rem;font-weight:700;color:var(--heat);background:none;border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer}
+/* ---------- flashcards ---------- */
+.cardlink{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px dashed var(--cold);border-radius:12px;padding:12px 16px}
+.cardlink span{color:var(--muted);font-size:.92rem}
+.fprog{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.fbar{height:6px;border-radius:4px;background:var(--sunk);overflow:hidden}.fbar i{display:block;height:100%;background:var(--good);transition:width .4s}
+.fcard{display:block;width:100%;max-width:640px;margin:6px auto 0;min-height:240px;border:0;padding:0;background:none;cursor:pointer;perspective:1200px;font:inherit;color:var(--ink)}
+.fin{position:relative;display:grid;min-height:240px;transition:transform .5s;transform-style:preserve-3d}
+.fcard.flip .fin{transform:rotateY(180deg)}
+.fface{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:24px 22px;border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}
+.ffront{background:var(--surface);border:1px solid var(--line);box-shadow:0 6px 18px -10px rgba(0,0,0,.35)}
+.fback{background:var(--cold-soft);border:1px solid var(--cold);transform:rotateY(180deg)}
+.fface small{font-size:.78rem;font-weight:800;letter-spacing:.04em;color:var(--heat)}
+.fface em{font-style:normal;font-size:.82rem;color:var(--muted)}
+.ftxt{font-size:1.18rem;font-weight:700;line-height:1.5;max-width:40ch}
+.fback .ftxt{font-weight:600}
+.fnav,.fknow{justify-content:center}
+@media (prefers-reduced-motion:reduce){.fin{transition:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -478,6 +513,74 @@ quiz:[
 {q:'קרח נמס מעצמו ב-25°C אף שההתכה אנדותרמית. למה?',o:['ΔSsurr חיובי','העלייה באנטרופיה של המערכת גדולה מהירידה באנטרופיה של הסביבה, ולכן ΔSuniv > 0','ההתכה אקסותרמית בטמפרטורה זו','ΔH = 0 ב-25°C'],a:1,e:'ב-298K: ΔSsurr ≈ −6010/298 ≈ −20.2 J/K, ו-ΔSsys ≈ +22 J/K. הסכום חיובי.'}
 ]}
 ];
+/* ================= flashcards deck (based on the teacher's NotebookLM deck) ================= */
+const D = 'Δ';
+const DECK = [
+{c:'system',q:'מהי הגדרת מערכת פתוחה?',a:'מערכת שיכולה להחליף גם חומר וגם אנרגיה עם הסביבה.'},
+{c:'system',q:'מהי הגדרת מערכת סגורה?',a:'מערכת שיכולה להחליף אנרגיה עם הסביבה, אך אינה יכולה להחליף עמה חומר.'},
+{c:'system',q:'מהי הגדרת מערכת מבודדת?',a:'מערכת שאינה יכולה להחליף לא חומר ולא אנרגיה עם הסביבה.'},
+{c:'enthalpy',q:'מהי תגובה אקסותרמית?',a:'תגובה כימית שמשחררת אנרגיה (חום) מהמערכת אל הסביבה.'},
+{c:'enthalpy',q:'מהו הסימן של השינוי באנתלפיה (ΔH) בתגובה אקסותרמית?',a:'שלילי: <span class="f">ΔH &lt; 0</span>'},
+{c:'enthalpy',q:'מהי תגובה אנדותרמית?',a:'תגובה כימית שקולטת אנרגיה (חום) מהסביבה אל המערכת.'},
+{c:'enthalpy',q:'מהו הסימן של השינוי באנתלפיה (ΔH) בתגובה אנדותרמית?',a:'חיובי: <span class="f">ΔH &gt; 0</span>'},
+{c:'system',q:'כיצד משתנה טמפרטורת הסביבה במהלך תגובה אקסותרמית בכלי שמאפשר מעבר חום?',a:'טמפרטורת הסביבה עולה, כי אנרגיה עוברת מהמערכת לסביבה.'},
+{c:'system',q:'כיצד משתנה טמפרטורת הסביבה במהלך תגובה אנדותרמית בכלי שמאפשר מעבר חום?',a:'טמפרטורת הסביבה יורדת, כי המערכת קולטת אנרגיה מהסביבה.'},
+{c:'enthalpy',q:'מהי אנתלפיה (H)?',a:'גודל שמייצג את "תכולת האנרגיה" של המערכת בלחץ קבוע. מודדים רק את השינוי בה, ΔH.'},
+{c:'bonds',q:'איך אפשר לתאר את ΔH ברמה המיקרוסקופית?',a:'ההפרש בין האנרגיה שמושקעת בשבירת הקשרים במגיבים לבין האנרגיה שמשתחררת ביצירת הקשרים בתוצרים.'},
+{c:'bonds',q:'כיצד משפיעה שבירת קשרים כימיים על אנרגיית המערכת?',a:'שבירת קשרים דורשת השקעת אנרגיה: תהליך אנדותרמי.'},
+{c:'bonds',q:'כיצד משפיעה יצירת קשרים כימיים על אנרגיית המערכת?',a:'יצירת קשרים משחררת אנרגיה: תהליך אקסותרמי.'},
+{c:'bonds',q:'מהי הנוסחה לחישוב ΔH מאנתלפיות קשר?',a:'<span class="f">ΔH = Σ(bonds broken) − Σ(bonds formed)</span><br>שבירה פחות יצירה. רק כשכל החומרים בגז.'},
+{c:'bonds',q:'מה מייצגת אנתלפיית קשר?',a:'האנרגיה הדרושה לשבירת מול אחד של קשרים מסוג מסוים, כשהחומר במצב גז.'},
+{c:'enthalpy',x:1,q:'מהי נוסחת הקלורימטריה לחישוב כמות החום (Q) שנקלטת או נפלטת בחימום או קירור של חומר?',a:'<span class="f">Q = m · c · ΔT</span>'},
+{c:'enthalpy',x:1,q:'מה מייצג הגודל c בנוסחה <span class="f">Q = m · c · ΔT</span>?',a:'קיבול החום הסגולי של החומר: האנרגיה הדרושה כדי לחמם 1 g של החומר ב-1°C.'},
+{c:'enthalpy',q:'מה הקשר בין החום שעבר לסביבה (Q) לבין ΔH?',a:'ΔH מתייחס לכמויות שבניסוח. Q תלוי בכמות שהגיבה בפועל. אם הסביבה התחממה, המערכת איבדה אנרגיה ו-ΔH שלילי (סימן הפוך ל-Q של הסביבה).'},
+{c:'hess',q:'מה קובע חוק הס?',a:'השינוי באנתלפיה של תגובה תלוי רק במצב ההתחלתי ובמצב הסופי, ולא במסלול או במספר השלבים.'},
+{c:'hess',q:'הופכים את כיוון התגובה. מה קורה ל-ΔH?',a:'הערך המוחלט נשאר זהה, והסימן מתהפך.'},
+{c:'hess',q:'כופלים את מקדמי התגובה פי 2. מה קורה ל-ΔH?',a:'ΔH מוכפל פי 2.'},
+{c:'hess',x:1,q:'מהי אנתלפיית התהוות תקנית (ΔH°<sub>f</sub>) של תרכובת?',a:'השינוי באנתלפיה ביצירת מול אחד של התרכובת מיסודותיה, במצבם היציב ביותר ובתנאים תקניים.'},
+{c:'hess',x:1,q:'מהו ΔH°<sub>f</sub> של יסוד במצבו היציב ביותר בתנאים תקניים?',a:'אפס: <span class="f">0 kJ/mol</span>'},
+{c:'rate',q:'כיצד מוגדר קצב תגובה?',a:'השינוי בריכוז (או בכמות) של מגיב או תוצר ביחידת זמן.'},
+{c:'rate',q:'מהם התנאים להתנגשות פורייה (אפקטיבית) לפי מודל ההתנגשויות?',a:'אנרגיה גדולה או שווה לאנרגיית השפעול, וכיוון מתאים של החלקיקים בזמן ההתנגשות.'},
+{c:'rate',q:'מהי אנרגיית שפעול (E<sub>a</sub>)?',a:'האנרגיה המינימלית שהחלקיקים המגיבים צריכים כדי לעבור את מחסום האנרגיה ולהפוך לתוצרים.'},
+{c:'rate',q:'מהו תצמיד משופעל?',a:'מצב מעבר רגעי ולא יציב, בעל האנרגיה הגבוהה ביותר במהלך התגובה. בו קשרים ישנים נחלשים וקשרים חדשים מתחילים להיווצר.'},
+{c:'rate',q:'כיצד העלאת טמפרטורה משפיעה על קצב התגובה ברמה המיקרוסקופית?',a:'האנרגיה הקינטית הממוצעת עולה, ההתנגשויות תכופות יותר, ויותר חלקיקים בעלי אנרגיה ≥ E<sub>a</sub>.'},
+{c:'rate',q:'כיצד הגדלת ריכוז המגיבים משפיעה על קצב התגובה?',a:'יש יותר חלקיקים ביחידת נפח, ולכן יותר התנגשויות ביחידת זמן, והקצב עולה.'},
+{c:'rate',q:'כיצד הגדלת שטח הפנים של מגיב מוצק משפיעה על קצב התגובה?',a:'יותר חלקיקים חשופים למפגש עם המגיב האחר, ולכן יותר התנגשויות.'},
+{c:'rate',q:'מהו תפקידו של זרז?',a:'להגדיל את קצב התגובה בלי להיצרך בה.'},
+{c:'rate',q:'באיזה אופן זרז מאיץ תגובה?',a:'הוא מאפשר מסלול חלופי לתגובה, עם אנרגיית שפעול נמוכה יותר.'},
+{c:'rate',q:'כיצד משפיע זרז על ΔH של התגובה?',a:'לא משפיע. רמות האנרגיה של המגיבים והתוצרים לא משתנות.'},
+{c:'rate',q:'כיצד משפיע זרז על אנרגיית השפעול של התגובה ההפוכה?',a:'מוריד אותה באותה מידה שהוא מוריד את אנרגיית השפעול של התגובה הישירה.'},
+{c:'entropy',q:'מהי אנטרופיה (S)?',a:'מדד לפיזור האנרגיה והחלקיקים, כלומר למספר המצבים המיקרוסקופיים האפשריים במערכת.'},
+{c:'entropy',q:'איך מדורגים מצבי הצבירה של אותו חומר לפי האנטרופיה?',a:'<span class="f">S(gas) ≫ S(liquid) &gt; S(solid)</span>'},
+{c:'entropy',q:'כיצד משפיעה העלאת טמפרטורה של חומר על האנטרופיה שלו?',a:'האנטרופיה עולה, כי האנרגיה של החלקיקים גדלה ויש יותר דרכים לפזר אותה.'},
+{c:'entropy',q:'כיצד משפיעה עלייה במספר מולי הגז בתגובה על ΔS<sub>sys</sub>?',a:'ΔS<sub>sys</sub> חיובי.'},
+{c:'entropy',q:'מה קובע החוק השני של התרמודינמיקה לגבי תהליך ספונטני?',a:'בכל תהליך ספונטני האנטרופיה של היקום גדלה:<br><span class="f">ΔS(univ) = ΔS(sys) + ΔS(surr) &gt; 0</span>'},
+{c:'entropy',q:'מהי המשוואה לחישוב ΔS של הסביבה?',a:'<span class="f">ΔS(surr) = −ΔH / T</span><br>זכרו להמיר kJ ל-J!'},
+{c:'entropy',q:'מהו הסימן של ΔS<sub>surr</sub> בתהליך אקסותרמי?',a:'חיובי. האנרגיה שנפלטה לסביבה מתפזרת בה.'},
+{c:'entropy',x:1,q:'מהי האנרגיה החופשית של גיבס (G)?',a:'גודל שמשמש לקביעת ספונטניות של תהליך בלחץ ובטמפרטורה קבועים.'},
+{c:'entropy',x:1,q:'מהי משוואת גיבס?',a:'<span class="f">ΔG = ΔH − TΔS</span>'},
+{c:'entropy',x:1,q:'מהו תנאי הספונטניות לפי ΔG?',a:'<span class="f">ΔG &lt; 0</span>'},
+{c:'entropy',x:1,q:'מה מצב התהליך כאשר ΔG = 0?',a:'המערכת במצב של שיווי משקל דינמי.'},
+{c:'entropy',x:1,q:'מתי תהליך עם ΔH &lt; 0 ו-ΔS &gt; 0 ספונטני?',a:'בכל טמפרטורה.'},
+{c:'entropy',x:1,q:'מתי תהליך עם ΔH &gt; 0 ו-ΔS &lt; 0 ספונטני?',a:'באף טמפרטורה.'},
+{c:'entropy',x:1,q:'מתי תהליך עם ΔH &lt; 0 ו-ΔS &lt; 0 ספונטני?',a:'בטמפרטורות נמוכות בלבד.'},
+{c:'entropy',x:1,q:'מתי תהליך עם ΔH &gt; 0 ו-ΔS &gt; 0 ספונטני?',a:'בטמפרטורות גבוהות בלבד.'},
+{c:'entropy',x:1,q:'איך מחשבים את הטמפרטורה שבה תהליך עובר מספונטני ללא ספונטני?',a:'<span class="f">T = ΔH / ΔS</span> (כאשר ΔG = 0)'},
+{c:'entropy',q:'המסת מלח מסוים במים מקררת את התמיסה ומתרחשת מעצמה. מהם הסימנים של ΔH ושל ΔS<sub>sys</sub>?',a:'ΔH &gt; 0 (אנדותרמי) ו-ΔS<sub>sys</sub> &gt; 0. העלייה באנטרופיה של המערכת היא שמאפשרת את הספונטניות.'},
+{c:'rate',x:1,q:'מה ההבדל בין תגובה ספונטנית לתגובה מהירה?',a:'ספונטניות קובעת אם יש לתגובה נטייה להתרחש. אנרגיית השפעול קובעת באיזה קצב היא תתרחש בפועל.'}
+];
+
+/* ================= mind map ================= */
+const MAP = {t:'אנרגיה בקצב הכימיה', k:[
+ {t:'אנרגיה וטמפרטורה', go:'energy', k:[{t:'אנרגיה פנימית = קינטית + פוטנציאלית'},{t:'טמפרטורה = אנרגיה קינטית ממוצעת'},{t:'אנרגיה פנימית תלויה בכמות החומר, טמפרטורה לא'},{t:'Ek ממוצעת ביחס ישר ל-T בקלווין'}]},
+ {t:'מערכת וסביבה', go:'system', k:[{t:'כלי פתוח: אנרגיה וחומר'},{t:'כלי סגור: רק אנרגיה'},{t:'כלי מבודד: לא אנרגיה ולא חומר'},{t:'אקסותרמי: אנרגיה מהמערכת → לסביבה'},{t:'אנדותרמי: אנרגיה מהסביבה → למערכת'}]},
+ {t:'אנתלפיה (ΔH)', go:'enthalpy', k:[{t:'ΔH = H(products) − H(reactants)',f:1},{t:'אקסותרמית: ΔH < 0'},{t:'אנדותרמית: ΔH > 0'},{t:'ייצוג: גרף, או ΔH ליד הניסוח (kJ)'},{t:'ΔH לפי הניסוח, Q לפי הכמות בפועל'}]},
+ {t:'מצבי צבירה', go:'phases', k:[{t:'התכה ואידוי: אנדותרמיים'},{t:'קפיאה ועיבוי: אקסותרמיים'},{t:'אידוי (+40.7) ≫ התכה (+6.0) במים'},{t:'המראה = התכה + אידוי'},{t:'קשרים קוולנטיים לא נשברים'}]},
+ {t:'חוק הס', go:'hess', k:[{t:'ΔH תלוי רק במצב ההתחלתי והסופי'},{t:'היפוך ניסוח → היפוך סימן'},{t:'הכפלת ניסוח → הכפלת ΔH'},{t:'מחברים שלבים ומבטלים חומרים'}]},
+ {t:'אנתלפיות קשר', go:'bonds', k:[{t:'שבירה: אנדותרמית'},{t:'יצירה: אקסותרמית'},{t:'ΔH = Σ(broken) − Σ(formed)',f:1},{t:'רק כשכל החומרים בגז'}]},
+ {t:'קצב תגובה', go:'rate', k:[{t:'מודל ההתנגשויות', k:[{t:'אנרגיה ≥ Ea'},{t:'כיוון מתאים'}]},{t:'Ea ותצמיד משופעל'},{t:'גורמים', k:[{t:'ריכוז'},{t:'טמפרטורה'},{t:'שטח פנים'},{t:'סוג המגיבים'}]},{t:'זרז: מוריד Ea, לא משנה ΔH'}]},
+ {t:'אנטרופיה וספונטניות', go:'entropy', k:[{t:'מדד לפיזור אנרגיה וחלקיקים'},{t:'גז > נוזל > מוצק'},{t:'סימן ΔSsys: מצב צבירה, מולי גז'},{t:'ΔS(surr) = −ΔH / T',f:1},{t:'תהליך ספונטני כאשר ΔSuniv > 0'}]}
+]};
 /* ================= helpers ================= */
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, attrs = {}, html = '') => { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (html) e.innerHTML = html; return e; };
@@ -908,18 +1011,18 @@ const nav = $('#nav'), view = $('#view');
 let active = [];
 function buildNav() {
   nav.querySelectorAll('.navbtn').forEach(b => b.remove());
-  const items = [['home', 'פתיחה', '0']].concat(CHAPTERS.map((c, i) => [c.id, c.title, String(i + 1)])).concat([['report', 'הדוח שלי למורה', '✓']]);
+  const items = [['home', 'פתיחה', '0']].concat(CHAPTERS.map((c, i) => [c.id, c.title, String(i + 1)])).concat([['map', 'מפת חשיבה', '◇'], ['cards', 'כרטיסיות לחזרה', '▤'], ['report', 'הדוח שלי למורה', '✓']]);
   items.forEach(([id, t, n]) => { const b = el('button', { class: 'navbtn', 'data-go': id }); const st = S.ch[id] && S.ch[id].best != null ? `<span class="st ${S.ch[id].best >= 8 ? 'ok' : ''}">${S.ch[id].best}/10</span>` : ''; b.innerHTML = `<span class="tick">${n}</span><span>${t}</span>${st}`; nav.appendChild(b); });
   const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
   $('#mercury').style.height = (done / CHAPTERS.length * 100) + '%';
 }
 nav.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
-view.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+view.addEventListener('click', e => { const cb = e.target.closest('[data-cards]'); if (cb) { CF.ch = cb.dataset.cards; CF.i = 0; go('cards'); return; } const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 
 function go(id, noScroll) {
   active.forEach(w => w.stop && w.stop()); active = [];
   view.innerHTML = '';
-  if (id === 'home') renderHome(); else if (id === 'report') renderReport(); else renderChapter(CHAPTERS.find(c => c.id === id) || CHAPTERS[0]);
+  if (id === 'home') renderHome(); else if (id === 'report') renderReport(); else if (id === 'map') renderMap(); else if (id === 'cards') renderCards(); else renderChapter(CHAPTERS.find(c => c.id === id) || CHAPTERS[0]);
   nav.querySelectorAll('.navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'));
   try { history.replaceState(null, '', '#' + id); } catch (e) {}
   if (!noScroll) window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
@@ -941,6 +1044,7 @@ function renderHome() {
   <li>עונים על 10 שאלות. אחרי כל תשובה מופיע הסבר, גם כשצדקתם.</li>
   <li>מספרים לי איך הרגשתם ומה היה קשה. אני קורא כל משוב.</li>
   <li>בסוף שולחים לי את "הדוח שלי למורה".</li></ol></section>
+  <section class="blk"><h2>כלי חזרה</h2><div class="homegrid"><button class="homecard" data-go="map"><span class="n">מבט על</span><b>מפת חשיבה</b><small>כל היחידה במפה אחת. לחיצה על ענף פותחת אותו.</small></button><button class="homecard" data-go="cards"><span class="n">${DECK.filter(d => !d.x).length} כרטיסים</span><b>כרטיסיות לחזרה</b><small>שאלה בצד אחד, תשובה בצד השני. מסמנים מה כבר יודעים.</small></button></div></section>
   <section class="blk"><h2>הפרקים</h2><div class="homegrid" id="hg"></div></section>`;
   view.appendChild(v);
   const hg = $('#hg', v);
@@ -957,7 +1061,7 @@ const teacher = t => `<div class="teacher"><div class="av" aria-hidden="true">מ
 function renderChapter(c) {
   const idx = CHAPTERS.indexOf(c);
   const v = el('div', { class: 'view' });
-  v.innerHTML = `<p class="eyebrow">פרק ${idx + 1} מתוך ${CHAPTERS.length}</p><h1>${c.title}</h1>${c.html}<div id="qhost"></div>
+  v.innerHTML = `<p class="eyebrow">פרק ${idx + 1} מתוך ${CHAPTERS.length}</p><h1>${c.title}</h1>${c.html}${DECK.some(d => d.c === c.id) ? `<div class="cardlink"><div><b>חזרה מהירה בכרטיסיות</b><br><span>${DECK.filter(d => d.c === c.id && !d.x).length} כרטיסים לפרק הזה. מומלץ לפני הבוחן.</span></div><button class="btn ghost" data-cards="${c.id}">לכרטיסיות של הפרק</button></div>` : ''}<div id="qhost"></div>
   <div class="navfoot">${idx > 0 ? `<button class="btn ghost" data-go="${CHAPTERS[idx - 1].id}">הפרק הקודם</button>` : '<span></span>'}${idx < CHAPTERS.length - 1 ? `<button class="btn" data-go="${CHAPTERS[idx + 1].id}">הפרק הבא</button>` : '<button class="btn" data-go="report">לדוח שלי</button>'}</div>`;
   view.appendChild(v);
   v.querySelectorAll('.widget').forEach(w => { const f = W[w.dataset.w]; if (f) { const api = f(w) || {}; active.push(api); } });
@@ -1056,6 +1160,7 @@ function reportText() {
     L.push('');
   });
   const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null);
+  if (S.known) { const core = DECK.filter(d => !d.x).length, k = DECK.filter((d, i) => !d.x && S.known[i]).length; if (k) L.push(`כרטיסיות: ידעתי ${k} מתוך ${core} כרטיסי הליבה`); }
   if (done.length) L.push(`ממוצע (ציון הטוב ביותר): ${(done.reduce((a, c) => a + S.ch[c.id].best, 0) / done.length).toFixed(1)}/10 ב-${done.length} פרקים`);
   return L.join('\n');
 }
@@ -1084,5 +1189,69 @@ $('#themebtn').addEventListener('click', () => { const r = document.documentElem
 let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rz); rz = setTimeout(() => { active.forEach(a => { if (a.stop && a.start) { a.stop(); a.start(); } }); }, 250); });
 buildNav();
 const startId = (location.hash || '').slice(1);
-go(['home', 'report'].concat(CHAPTERS.map(c => c.id)).includes(startId) ? startId : 'home', true);
+go(['home', 'report', 'map', 'cards'].concat(CHAPTERS.map(c => c.id)).includes(startId) ? startId : 'home', true);
+
+/* ================= mind map ================= */
+function renderMap() {
+  const v = el('div', { class: 'view' });
+  v.innerHTML = `<p class="eyebrow">מבט על</p><h1>מפת חשיבה</h1><p class="lead">כל היחידה במפה אחת. לחצו על ענף כדי לפתוח או לסגור אותו. לחיצה על "לפרק" מעבירה להסבר המלא.</p>
+  <div class="controls"><button class="btn ghost" id="mOpen">פתיחת כל הענפים</button><button class="btn ghost" id="mClose">סגירת כל הענפים</button></div><div class="mmwrap"><ul class="mm" id="mm"></ul></div>`;
+  view.appendChild(v);
+  const build = (n, depth) => {
+    const li = el('li', { class: 'd' + depth });
+    const has = n.k && n.k.length;
+    const node = el('div', { class: 'mnode' + (has ? ' has' : '') });
+    node.innerHTML = `${has ? `<button class="mtog" aria-expanded="${depth < 1 ? 'true' : 'false'}">${n.t}</button>` : `<span${n.f ? ' class="f" dir="ltr"' : ''}>${n.t.replace(/</g, '&lt;')}</span>`}${n.go ? ` <button class="mgo" data-go="${n.go}">לפרק</button>` : ''}`;
+    li.appendChild(node);
+    if (has) { const ul = el('ul'); ul.hidden = depth >= 1; n.k.forEach(k => ul.appendChild(build(k, depth + 1))); li.appendChild(ul); }
+    return li;
+  };
+  $('#mm', v).appendChild(build(MAP, 0));
+  v.addEventListener('click', e => { const t = e.target.closest('.mtog'); if (!t) return; const ul = t.closest('li').querySelector(':scope > ul'); const open = t.getAttribute('aria-expanded') !== 'true'; t.setAttribute('aria-expanded', open); ul.hidden = !open; });
+  const all = open => v.querySelectorAll('.mtog').forEach(t => { t.setAttribute('aria-expanded', open || t.closest('li').classList.contains('d0')); t.closest('li').querySelector(':scope > ul').hidden = !(open || t.closest('li').classList.contains('d0')); });
+  $('#mOpen', v).addEventListener('click', () => all(true)); $('#mClose', v).addEventListener('click', () => all(false));
+}
+
+/* ================= flashcards ================= */
+const CF = { ch: 'all', x: false, onlyNew: false, i: 0, order: null, flipped: false };
+function renderCards() {
+  S.known = S.known || {};
+  const v = el('div', { class: 'view' });
+  const chips = [['all', 'כל הפרקים']].concat(CHAPTERS.filter(c => DECK.some(d => d.c === c.id)).map(c => [c.id, c.title]));
+  v.innerHTML = `<p class="eyebrow">חזרה</p><h1>כרטיסיות לחזרה</h1><p class="lead">קראו את השאלה, ענו לעצמכם בראש, ואז הפכו את הכרטיס. סמנו אם ידעתם. מקלדת: רווח להפיכה, חיצים למעבר.</p>
+  <div class="chips" id="fch">${chips.map(([id, t]) => `<button class="chip" type="button" data-ch="${id}" aria-pressed="${CF.ch === id}">${t}</button>`).join('')}</div>
+  <div class="controls"><label for="fx"><input type="checkbox" id="fx" ${CF.x ? 'checked' : ''}> כולל כרטיסי העשרה (מעבר לתוכנית הבגרות)</label><label for="fn"><input type="checkbox" id="fn" ${CF.onlyNew ? 'checked' : ''}> רק מה שעוד לא ידעתי</label><button class="btn ghost" id="fsh">ערבוב</button></div>
+  <div id="fbox"></div>`;
+  view.appendChild(v);
+  const list = () => { let L = DECK.map((d, i) => ({ ...d, id: i })).filter(d => (CF.ch === 'all' || d.c === CF.ch) && (CF.x || !d.x)); if (CF.onlyNew) L = L.filter(d => !S.known[d.id]); if (CF.order) L.sort((a, b) => (CF.order[a.id] || 0) - (CF.order[b.id] || 0)); return L; };
+  const draw = () => {
+    const L = list(), box = $('#fbox', v);
+    const all = DECK.map((d, i) => ({ ...d, id: i })).filter(d => (CF.ch === 'all' || d.c === CF.ch) && (CF.x || !d.x));
+    const kn = all.filter(d => S.known[d.id]).length;
+    if (!L.length) { box.innerHTML = `<div class="panel">${teacher(all.length ? `${hi()}סימנתם שאתם יודעים את כל ${all.length} הכרטיסים כאן. כל הכבוד! אפשר לבטל את הסימון "רק מה שעוד לא ידעתי" כדי לחזור על הכול.` : 'אין כרטיסים בבחירה הזו.')}</div>`; return; }
+    if (CF.i >= L.length) CF.i = 0;
+    const d = L[CF.i], ch = CHAPTERS.find(c => c.id === d.c);
+    box.innerHTML = `<div class="fprog"><span>כרטיס <b>${CF.i + 1}</b> מתוך <b>${L.length}</b></span><span>ידעתי: <b>${kn}</b> מתוך <b>${all.length}</b></span></div>
+    <div class="fbar" aria-hidden="true"><i style="width:${all.length ? kn / all.length * 100 : 0}%"></i></div>
+    <button class="fcard${CF.flipped ? ' flip' : ''}" id="fcard" aria-label="הפיכת הכרטיס"><span class="fin"><span class="fface ffront"><small>${ch ? ch.title : ''}${d.x ? ' · העשרה' : ''}</small><span class="ftxt">${d.q}</span><em>לחצו להפיכה</em></span><span class="fface fback"><small>תשובה</small><span class="ftxt">${d.a}</span></span></span></button>
+    <div class="controls fnav"><button class="btn ghost" id="fprev">הקודם</button><button class="btn" id="fflip">הפיכה</button><button class="btn ghost" id="fnext">הבא</button></div>
+    <div class="controls fknow" ${CF.flipped ? '' : 'hidden'}><span>ידעתם?</span><button class="btn heat" id="fno">עוד לא</button><button class="btn" id="fyes" style="background:var(--good);border-color:var(--good)">ידעתי</button></div>`;
+    const flip = () => { CF.flipped = !CF.flipped; $('#fcard', box).classList.toggle('flip', CF.flipped); box.querySelector('.fknow').hidden = !CF.flipped; };
+    const step = n => { CF.i = (CF.i + n + L.length) % L.length; CF.flipped = false; draw(); };
+    $('#fcard', box).addEventListener('click', flip); $('#fflip', box).addEventListener('click', flip);
+    $('#fprev', box).addEventListener('click', () => step(-1)); $('#fnext', box).addEventListener('click', () => step(1));
+    $('#fyes', box).addEventListener('click', () => { S.known[d.id] = 1; save(); CF.flipped = false; if (CF.onlyNew) draw(); else step(1); });
+    $('#fno', box).addEventListener('click', () => { delete S.known[d.id]; save(); step(1); });
+    v._step = step; v._flip = flip;
+  };
+  $('#fch', v).addEventListener('click', e => { const b = e.target.closest('[data-ch]'); if (!b) return; CF.ch = b.dataset.ch; CF.i = 0; CF.flipped = false; v.querySelectorAll('#fch .chip').forEach(c => c.setAttribute('aria-pressed', c === b)); draw(); });
+  $('#fx', v).addEventListener('change', e => { CF.x = e.target.checked; CF.i = 0; CF.flipped = false; draw(); });
+  $('#fn', v).addEventListener('change', e => { CF.onlyNew = e.target.checked; CF.i = 0; CF.flipped = false; draw(); });
+  $('#fsh', v).addEventListener('click', () => { CF.order = {}; DECK.forEach((_, i) => CF.order[i] = Math.random()); CF.i = 0; CF.flipped = false; draw(); });
+  draw();
+}
+document.addEventListener('keydown', e => {
+  const v = view.querySelector('.view'); if (!v || !v._step || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') { v._step(1); e.preventDefault(); } else if (e.key === 'ArrowRight') { v._step(-1); e.preventDefault(); } else if (e.key === ' ' && e.target.tagName !== 'BUTTON') { v._flip(); e.preventDefault(); }
+});
 </script></body></html>
