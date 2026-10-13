@@ -1334,7 +1334,7 @@ function renderReport() {
 $('#themebtn').addEventListener('click', () => { setTimeout(() => { buildNav(); }, 0); const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; });
 let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rz); rz = setTimeout(() => { active.forEach(a => { if (a.stop && a.start) { a.stop(); a.start(); } }); }, 250); });
 /* ================= teacher notifications (Google Apps Script web app) ================= */
-const NOTIFY_URL = 'https://script.google.com/macros/s/AKfycbxyB4rh51E_-HveYOvXTh_hRbYMwjR94kSQN34TgeniNSUPgrIZD797NbNwrca05PKZPw/exec';
+const NOTIFY_URL = 'https://script.google.com/macros/s/AKfycbxx7Hv7YUWQZT--IcFp_NZ7Yd-NB-3jkOgT0Kl-p_GMrobgYKq3fUWc_8glDIt37vEL/exec';
 function notify(type, data) {
   if (!NOTIFY_URL || !S.name) return;
   const body = Object.assign({ type, name: S.name.slice(0, 60), device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'טלפון' : 'מחשב', visits: S.visits || 1 }, data || {});
