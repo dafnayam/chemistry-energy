@@ -202,7 +202,7 @@ const MEDIA_BASE = location.protocol === 'file:' ? 'https://noynovik-maker.githu
 const M = n => MEDIA_BASE + 'media/' + encodeURI(n);
 const PODCAST = () => `<div class="widget mediabox"><div class="wtitle"><span class="wtag">פודקאסט</span><h3>איך הקצב שולט באנרגיה בכימיה</h3></div>
 <p>שיחה של כ-19 דקות על אנרגיה וקצב. אפשר להאזין בדרך הביתה או תוך כדי חזרה למבחן.</p>
-<audio controls preload="none" src="${M('איך הקצב שולט באנרגיה בכימיה.m4a')}">הדפדפן לא תומך בהשמעת שמע.</audio>
+<audio controls preload="none" src="${M('איך הקצב שולט באנרגיה בכימיה.mp3')}">הדפדפן לא תומך בהשמעת שמע.</audio>
 <p class="caption">בזמן ההאזנה, נסו לענות לעצמכם: מה ההבדל בין "כמה אנרגיה" (ΔH) לבין "כמה מהר" (קצב)? ואיזו דוגמה מהפודקאסט הכי עזרה לכם להבין?</p></div>`;
 const VIDEO = () => `<div class="widget mediabox"><div class="wtitle"><span class="wtag">סרטון</span><h3>למה גפרורים לא נדלקים מעצמם?</h3></div>
 <video controls playsinline preload="metadata" poster="${M('גפרורים - תמונה.jpg')}" src="${M('למה גפרורים לא נדלקים מעצמם.mp4')}">הדפדפן לא תומך בהצגת וידאו.</video>
