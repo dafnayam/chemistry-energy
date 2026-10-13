@@ -1,0 +1,1088 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אנרגיה בקצב הכימיה</title>
+<meta name="description" content="מערכת לימודית אינטראקטיבית: אנרגיה, אנתלפיה, קצב תגובה ואנטרופיה – כימיה 5 יח&quot;ל">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Suez+One&family=Assistant:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a thermometer-scale chapter rail beside a reading column; cold blue = energy in, ember = energy out */
+:root{
+  --paper:#f4f7fb; --surface:#ffffff; --sunk:#e9eef6; --ink:#16203a; --muted:#56627a; --line:#d5dde9;
+  --cold:#1f63c6; --cold-soft:#dfeafc; --heat:#cf4a12; --heat-soft:#fde6da;
+  --good:#23824a; --good-soft:#dcf3e4; --bad:#b8322b; --bad-soft:#fbe1df;
+  --focus:#1f63c6;
+  --f-display:"Suez One","Assistant",Georgia,serif;
+  --f-body:"Assistant","Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0e1422; --surface:#161f33; --sunk:#1c2740; --ink:#e6ebf5; --muted:#9ba8c0; --line:#2b3754;
+  --cold:#6ea8ff; --cold-soft:#1b2d50; --heat:#ff8d55; --heat-soft:#3d2316;
+  --good:#5fd38a; --good-soft:#163524; --bad:#ff7a70; --bad-soft:#3d1c1a; --focus:#6ea8ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e1422; --surface:#161f33; --sunk:#1c2740; --ink:#e6ebf5; --muted:#9ba8c0; --line:#2b3754;
+  --cold:#6ea8ff; --cold-soft:#1b2d50; --heat:#ff8d55; --heat-soft:#3d2316;
+  --good:#5fd38a; --good-soft:#163524; --bad:#ff7a70; --bad-soft:#3d1c1a; --focus:#6ea8ff; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.65;margin:0}
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+@media (max-width:860px){.app{grid-template-columns:minmax(0,1fr);gap:16px;padding:12px 16px 48px}}
+
+/* ---------- rail ---------- */
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;display:flex;flex-direction:column;gap:14px}
+@media (max-width:860px){.rail{position:static}}
+.brand{font-family:var(--f-display);font-size:1.55rem;line-height:1.15;margin:0;text-wrap:balance}
+.brand small{display:block;font-family:var(--f-body);font-size:.85rem;color:var(--muted);font-weight:600;margin-top:4px}
+.thermo{display:grid;grid-template-columns:18px minmax(0,1fr);gap:0 12px;position:relative}
+.tube{grid-row:1/-1;grid-column:1;position:relative;width:12px;margin:6px auto;border-radius:8px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
+.mercury{position:absolute;inset-inline:0;top:0;height:0;background:linear-gradient(180deg,var(--cold),var(--heat));transition:height .6s ease}
+.navbtn{grid-column:2;display:flex;align-items:baseline;gap:10px;text-align:right;background:none;border:0;padding:7px 10px;border-radius:8px;color:var(--ink);font:inherit;font-size:.98rem;cursor:pointer;position:relative}
+.navbtn:hover{background:var(--sunk)}
+.navbtn[aria-current="true"]{background:var(--surface);box-shadow:0 0 0 1px var(--line);font-weight:700}
+.navbtn .tick{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);min-width:1.6em}
+.navbtn .st{margin-inline-start:auto;font-size:.78rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.navbtn .st.ok{color:var(--good)}
+@media (max-width:860px){
+  .thermo{display:flex;overflow-x:auto;gap:6px;padding-bottom:6px}
+  .tube{display:none}
+  .navbtn{flex:0 0 auto;border:1px solid var(--line);background:var(--surface)}
+}
+.toolrow{display:flex;gap:8px;flex-wrap:wrap}
+.chipbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chipbtn:hover{border-color:var(--cold)}
+
+/* ---------- main ---------- */
+main{min-width:0}
+.view{display:flex;flex-direction:column;gap:22px}
+.eyebrow{font-size:.8rem;letter-spacing:.06em;font-weight:800;color:var(--heat);margin:0}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(1.9rem,4.4vw,2.7rem);line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.45rem;line-height:1.25;margin:0;text-wrap:balance}
+h3{font-size:1.12rem;margin:0;font-weight:800}
+p{margin:0;max-width:68ch}
+.lead{font-size:1.12rem;color:var(--muted)}
+section.blk{display:flex;flex-direction:column;gap:12px}
+ul,ol{margin:0;padding-inline-start:1.3em;max-width:68ch}
+li+li{margin-top:4px}
+.hook{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.hook b{color:var(--heat)}
+.key{border-inline-start:4px solid var(--cold);background:var(--cold-soft);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;display:flex;flex-direction:column;gap:6px}
+.warn{border-inline-start:4px solid var(--heat);background:var(--heat-soft);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;display:flex;flex-direction:column;gap:6px}
+.eq{direction:ltr;text-align:center;font-family:var(--f-mono);font-size:1.02rem;background:var(--sunk);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+.f{direction:ltr;unicode-bidi:isolate;font-family:var(--f-mono);font-size:.95em}
+.neg{color:var(--heat);font-weight:700}.pos{color:var(--cold);font-weight:700}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;min-width:100%;font-size:.95rem}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:right;vertical-align:top}
+th{font-weight:800;background:var(--sunk)}
+td.num{font-variant-numeric:tabular-nums;direction:ltr;text-align:right;font-family:var(--f-mono)}
+
+/* ---------- widgets ---------- */
+.widget{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.wtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wtag{font-size:.72rem;font-weight:800;letter-spacing:.05em;border-radius:999px;padding:2px 10px;background:var(--heat-soft);color:var(--heat)}
+.wtag.sim{background:var(--cold-soft);color:var(--cold)}
+canvas{display:block;width:100%;border-radius:10px;background:var(--sunk)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.controls label{display:flex;align-items:center;gap:8px;font-size:.92rem;font-weight:600}
+input[type=range]{accent-color:var(--cold);width:160px;max-width:100%}
+.btn{font:inherit;font-weight:700;font-size:.95rem;border:1px solid var(--cold);background:var(--cold);color:var(--surface);border-radius:8px;padding:7px 16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--cold)}
+.btn.heat{background:var(--heat);border-color:var(--heat)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.navbtn:focus-visible,.chipbtn:focus-visible,.opt:focus-visible,.mood:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.caption{min-height:3.4em;background:var(--sunk);border-radius:8px;padding:10px 14px;font-weight:600}
+.readout{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.92rem;font-variant-numeric:tabular-nums}
+.readout b{font-family:var(--f-mono)}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cardlet{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.cardlet h4{margin:0;font-size:1rem}
+.cardlet small{color:var(--muted)}
+select,input[type=number],input[type=text],textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+input[type=number]{width:7.5em;direction:ltr}
+textarea{width:100%;min-height:80px;resize:vertical}
+.hessrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.hessrow .eq{flex:1 1 260px;text-align:left;padding:6px 10px}
+.verdict{font-weight:800;border-radius:8px;padding:8px 12px}
+.verdict.ok{background:var(--good-soft);color:var(--good)}
+.verdict.no{background:var(--heat-soft);color:var(--heat)}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{color:var(--cold);font-weight:700;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.9rem;background:var(--surface)}
+.links a:hover{border-color:var(--cold)}
+
+/* ---------- quiz & feelings ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.panel.quiz{border-top:5px solid var(--heat)}
+.dots{display:flex;gap:5px;flex-wrap:wrap}
+.dot{width:22px;height:8px;border-radius:4px;background:var(--sunk);border:1px solid var(--line)}
+.dot.ok{background:var(--good);border-color:var(--good)}.dot.no{background:var(--bad);border-color:var(--bad)}.dot.cur{border-color:var(--ink)}
+.qtext{font-weight:700;font-size:1.08rem}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{font:inherit;text-align:right;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.opt:hover:not(:disabled){border-color:var(--cold)}
+.opt .lt{font-family:var(--f-mono);color:var(--muted);flex:0 0 auto}
+.opt.ok{background:var(--good-soft);border-color:var(--good)}
+.opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.fb.ok{background:var(--good-soft)}.fb.no{background:var(--heat-soft)}
+.fb strong{font-size:1rem}
+.score{font-family:var(--f-display);font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.moods{display:flex;gap:8px;flex-wrap:wrap}
+.mood{font:inherit;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px}
+.mood span{font-size:1.6rem;line-height:1}
+.mood small{font-size:.78rem;color:var(--muted)}
+.mood[aria-pressed="true"]{border-color:var(--cold);background:var(--cold-soft)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--cold);color:var(--surface);border-color:var(--cold)}
+.teacher{display:flex;gap:12px;align-items:flex-start;background:var(--cold-soft);border-radius:12px;padding:12px 14px}
+.teacher .av{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--cold),var(--heat));color:var(--surface);display:grid;place-items:center;font-family:var(--f-display);font-size:1rem}
+.teacher p{max-width:none}
+.navfoot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.report{white-space:pre-wrap;font-family:var(--f-body);background:var(--sunk);border-radius:10px;padding:14px;max-height:420px;overflow:auto}
+.homegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.homecard{font:inherit;text-align:right;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.homecard:hover{border-color:var(--cold)}
+.homecard .n{font-family:var(--f-mono);font-size:.8rem;color:var(--heat)}
+.homecard small{color:var(--muted)}
+.thermobar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--heat),var(--cold))}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head><body>
+<div class="app">
+  <aside class="rail">
+    <p class="brand">אנרגיה בקצב הכימיה<small>כימיה 5 יח"ל · תשפ"ז</small></p>
+    <nav class="thermo" id="nav" aria-label="פרקים"><div class="tube" aria-hidden="true"><div class="mercury" id="mercury"></div></div></nav>
+    <div class="toolrow"><button class="chipbtn" id="themebtn" type="button">מצב בהיר / כהה</button></div>
+  </aside>
+  <main id="view" dir="rtl"></main>
+</div>
+<script>
+const YT = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+const vid = (arr) => '<div class="links">' + arr.map(([t,q]) => `<a href="${YT(q)}" target="_blank" rel="noopener">${t}</a>`).join('') + '</div>';
+
+const CHAPTERS = [
+/* ================= 1 ================= */
+{
+id:'energy', title:'אנרגיה פנימית וטמפרטורה', short:'קינטית, פוטנציאלית, ממוצע',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>כוס תה רותח ואמבטיה מלאה מים חמימים. באיזו מהן הטמפרטורה גבוהה יותר? ובאיזו יש יותר אנרגיה? רשמו לעצמכם תשובה לפני שממשיכים. נחזור אליה בסוף הפרק.</p></div>
+<section class="blk"><h2>האנרגיה של החלקיקים</h2>
+<p>כל חומר בנוי מחלקיקים (אטומים, מולקולות או יונים) שנמצאים בתנועה מתמדת. לחלקיקים יש שני סוגים של אנרגיה:</p>
+<ul>
+<li><b>אנרגיה קינטית</b>: אנרגיית התנועה של החלקיקים. ככל שחלקיק נע מהר יותר, האנרגיה הקינטית שלו גדולה יותר. <b>האנרגיה הקינטית הכוללת</b> היא סכום האנרגיות הקינטיות של כל החלקיקים בדגימה.</li>
+<li><b>אנרגיה פוטנציאלית</b>: אנרגיה "אגורה" שנובעת מכוחות המשיכה והדחייה בין החלקיקים, גם בתוך הקשרים הכימיים וגם בין המולקולות. כשמרחיקים זה מזה חלקיקים שנמשכים זה לזה, האנרגיה הפוטנציאלית עולה.</li>
+</ul>
+<div class="key"><h3>אנרגיה פנימית</h3><p>האנרגיה הפנימית של חומר היא סכום האנרגיה הקינטית והאנרגיה הפוטנציאלית של כל החלקיקים שבו. האנרגיה הפוטנציאלית היא מרכיב של האנרגיה הפנימית.</p>
+<div class="eq">אנרגיה פנימית = אנרגיה קינטית כוללת + אנרגיה פוטנציאלית</div></div>
+</section>
+<section class="blk"><h2>טמפרטורה היא ממוצע</h2>
+<p>בדגימה אחת החלקיקים נעים במהירויות שונות: יש איטיים ויש מהירים. <b>הטמפרטורה היא מדד לאנרגיה הקינטית הממוצעת של החלקיקים.</b> לכן הטמפרטורה לא תלויה בכמות החומר, אבל האנרגיה הפנימית כן תלויה בה.</p>
+<p>האנרגיה הקינטית הממוצעת עומדת ביחס ישר לטמפרטורה בסולם קלווין: אם הטמפרטורה בקלווין מוכפלת, גם האנרגיה הקינטית הממוצעת מוכפלת.</p>
+</section>
+<div class="widget" data-w="particles"></div>
+<div class="warn"><h3>תפיסה שגויה נפוצה</h3><p>"לגוף חם יותר יש תמיד יותר אנרגיה." לא בהכרח. בכוס התה הטמפרטורה גבוהה יותר (אנרגיה קינטית ממוצעת גבוהה), אבל באמבטיה יש הרבה יותר חלקיקים, ולכן האנרגיה הפנימית הכוללת שלה גדולה יותר.</p></div>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['אנרגיה קינטית וטמפרטורה','אנרגיה קינטית ממוצעת טמפרטורה כימיה'],['Temperature and kinetic energy','temperature average kinetic energy particles chemistry']])}</section>
+`,
+quiz:[
+{q:'מהי האנרגיה הפנימית של חומר?',o:['האנרגיה הקינטית הממוצעת של החלקיקים','סכום האנרגיות הקינטיות והפוטנציאליות של כל החלקיקים','הטמפרטורה של החומר בקלווין','האנרגיה שהחומר פולט בתגובה כימית'],a:1,e:'אנרגיה פנימית כוללת את כל האנרגיה של החלקיקים: תנועה (קינטית) ומשיכה ודחייה ביניהם (פוטנציאלית).'},
+{q:'טמפרטורה היא מדד ל...',o:['אנרגיה פנימית כוללת','אנרגיה פוטנציאלית של הקשרים','אנרגיה קינטית ממוצעת של החלקיקים','מספר החלקיקים בדגימה'],a:2,e:'הטמפרטורה מתארת את הממוצע של האנרגיה הקינטית, ולכן אינה תלויה בכמות החומר.'},
+{q:'כוס מים ודלי מים, שניהם ב-50°C. מה נכון?',o:['האנרגיה הקינטית הממוצעת שווה, והאנרגיה הפנימית בדלי גדולה יותר','האנרגיה הפנימית שווה בשניהם','האנרגיה הקינטית הממוצעת בדלי גדולה יותר','בכוס יש יותר אנרגיה כי היא קטנה'],a:0,e:'טמפרטורה שווה פירושה אנרגיה קינטית ממוצעת שווה. בדלי יש יותר חלקיקים, ולכן סכום האנרגיות גדול יותר.'},
+{q:'האנרגיה הפוטנציאלית בחומר נובעת בעיקר מ...',o:['מהירות החלקיקים','כוחות המשיכה והדחייה בין החלקיקים','צבע החומר','הלחץ בכלי'],a:1,e:'אנרגיה פוטנציאלית קשורה לכוחות בין החלקיקים: בקשרים כימיים ובין המולקולות.'},
+{q:'מחממים גז בכלי סגור, בלי שינוי במצב הצבירה. מה קורה לחלקיקים?',o:['הם נעים לאט יותר','המהירות הממוצעת שלהם והאנרגיה הקינטית הממוצעת עולות','מספר החלקיקים גדל','האנרגיה הקינטית הממוצעת לא משתנה'],a:1,e:'עליית טמפרטורה פירושה עלייה באנרגיה הקינטית הממוצעת, כלומר החלקיקים נעים מהר יותר בממוצע.'},
+{q:'בזמן התכת קרח ב-0°C הטמפרטורה נשארת קבועה למרות החימום. לאן הולכת האנרגיה?',o:['להגדלת האנרגיה הקינטית הממוצעת','להגדלת האנרגיה הפוטנציאלית: להתגברות על חלק מכוחות המשיכה בין המולקולות','היא נעלמת','לשבירת הקשרים בין אטומי H ו-O'],a:1,e:'בשינוי מצב צבירה האנרגיה משמשת להרחקת החלקיקים זה מזה. בהתכה לא נשברים קשרים קוולנטיים בתוך המולקולה.'},
+{q:'דגימת הליום ודגימת ארגון באותה טמפרטורה. מה נכון?',o:['האנרגיה הקינטית הממוצעת של שתיהן שווה','לארגון אנרגיה קינטית ממוצעת גבוהה יותר כי הוא כבד','להליום אנרגיה קינטית ממוצעת גבוהה יותר','אי אפשר לדעת'],a:0,e:'באותה טמפרטורה האנרגיה הקינטית הממוצעת זהה. אטומי ההליום הקלים פשוט נעים מהר יותר כדי להגיע לאותה אנרגיה.'},
+{q:'איזו טענה מבחינה נכון בין אנרגיה לטמפרטורה?',o:['שתיהן תלויות בכמות החומר','הטמפרטורה תלויה בכמות החומר והאנרגיה הפנימית לא','האנרגיה הפנימית תלויה בכמות החומר והטמפרטורה לא','אין ביניהן הבדל'],a:2,e:'אנרגיה פנימית היא סכום, ולכן גדלה עם כמות החומר. טמפרטורה היא ממוצע, ולכן לא.'},
+{q:'הטמפרטורה של גז עלתה מ-200K ל-400K. מה קרה לאנרגיה הקינטית הממוצעת?',o:['לא השתנתה','גדלה פי 2','גדלה פי 4','קטנה פי 2'],a:1,e:'האנרגיה הקינטית הממוצעת עומדת ביחס ישר לטמפרטורה בקלווין: פי 2 בטמפרטורה, פי 2 באנרגיה.'},
+{q:'בדגימת גז בטמפרטורה קבועה:',o:['כל החלקיקים נעים באותה מהירות','לחלקיקים מהירויות שונות; הטמפרטורה מתארת את הממוצע','כל החלקיקים עומדים במקום','לחלקיקים הכבדים טמפרטורה גבוהה יותר'],a:1,e:'יש פיזור של מהירויות. בדיוק לכן טמפרטורה מוגדרת דרך הממוצע.'}
+]},
+/* ================= 2 ================= */
+{
+id:'system', title:'מערכת וסביבה', short:'כלי פתוח, סגור ומבודד',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>שקית קירור של עזרה ראשונה מתקררת כשלוחצים עליה. מאיפה "נלקחת" האנרגיה? ולאן היא הולכת?</p></div>
+<section class="blk"><h2>מי במרכז הסיפור?</h2>
+<p>כדי לדבר על מעברי אנרגיה צריך להחליט על מה אנחנו מסתכלים.</p>
+<ul><li><b>מערכת</b>: החלק שבו אנחנו מתמקדים, בדרך כלל החומרים המגיבים והתוצרים.</li>
+<li><b>סביבה</b>: כל מה שמחוץ למערכת: הכלי, המים שמסביב, האוויר, היד שמחזיקה את המבחנה.</li></ul>
+</section>
+<section class="blk"><h2>שלושה סוגי כלים</h2>
+<div class="tblwrap"><table><thead><tr><th>סוג הכלי</th><th>מעבר אנרגיה</th><th>מעבר חומר</th><th>דוגמה</th></tr></thead><tbody>
+<tr><td><b>פתוח</b></td><td>כן</td><td>כן</td><td>כוס תה בלי מכסה, מבחנה פתוחה</td></tr>
+<tr><td><b>סגור</b></td><td>כן</td><td>לא</td><td>בקבוק פקוק, מבחנה עם פקק</td></tr>
+<tr><td><b>מבודד</b></td><td>לא</td><td>לא</td><td>תרמוס סגור (באופן אידיאלי), קלורימטר</td></tr>
+</tbody></table></div>
+</section>
+<div class="widget" data-w="vessels"></div>
+<section class="blk"><h2>לאן זורמת האנרגיה?</h2>
+<ul><li>בתגובה <b class="neg">אקסותרמית</b> אנרגיה עוברת <b>מהמערכת אל הסביבה</b>. הסביבה מתחממת. מדחום בתמיסה מראה עלייה.</li>
+<li>בתגובה <b class="pos">אנדותרמית</b> אנרגיה עוברת <b>מהסביבה אל המערכת</b>. הסביבה מתקררת. המבחנה מרגישה קרה ביד.</li></ul>
+<div class="key"><p><b>חממית</b> (כרית גרגרי פשתן שמחממים במיקרוגל): במיקרוגל אנרגיה עוברת מהמיקרוגל אל הכרית. כשמניחים אותה על שריר כואב, אנרגיה עוברת מהכרית (המערכת) אל הגוף (הסביבה).</p></div>
+<div class="key"><p>בשקית הקירור מומס מלח (למשל אמוניום חנקתי) במים. התהליך אנדותרמי: האנרגיה נלקחת מהסביבה, כולל מהעור שלכם, ולכן מרגישים קור.</p></div>
+</section>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['מערכת פתוחה, סגורה ומבודדת','מערכת פתוחה סגורה מבודדת כימיה'],['Open, closed and isolated systems','open closed isolated system chemistry']])}</section>
+`,
+quiz:[
+{q:'בכימיה, "מערכת" היא...',o:['כל היקום','החלק שבו מתמקדים, בדרך כלל המגיבים והתוצרים','הכלי שבו מתרחשת התגובה בלבד','האוויר שמסביב'],a:1,e:'המערכת היא מה שבוחרים לחקור. כל השאר הוא הסביבה.'},
+{q:'מהי "הסביבה"?',o:['כל מה שמחוץ למערכת','רק האוויר בחדר','רק התוצרים','רק המדחום'],a:0,e:'סביבה כוללת את כל מה שאינו המערכת: הכלי, הממס שמסביב, האוויר ועוד.'},
+{q:'בכלי פתוח:',o:['רק אנרגיה עוברת','רק חומר עובר','גם אנרגיה וגם חומר יכולים לעבור','שום דבר לא עובר'],a:2,e:'בכלי פתוח אין מחסום: אדים, גזים ואנרגיה יכולים לעבור לסביבה ולהפך.'},
+{q:'בכלי סגור:',o:['אנרגיה עוברת, חומר לא','חומר עובר, אנרגיה לא','שניהם עוברים','שניהם לא עוברים'],a:0,e:'המכסה עוצר חומר, אבל דפנות הכלי מעבירות אנרגיה.'},
+{q:'בכלי מבודד:',o:['רק חומר עובר','אנרגיה וחומר לא עוברים','רק אנרגיה עוברת','שניהם עוברים בחופשיות'],a:1,e:'כלי מבודד (אידיאלי) אינו מאפשר מעבר אנרגיה או חומר.'},
+{q:'תגובה אקסותרמית מתרחשת בכלי סגור שאינו מבודד. מה יקרה לטמפרטורת הסביבה?',o:['תעלה','תרד','לא תשתנה','תעלה ואז תרד מתחת לטמפרטורה ההתחלתית'],a:0,e:'בתגובה אקסותרמית אנרגיה עוברת מהמערכת לסביבה, ולכן הסביבה מתחממת.'},
+{q:'פותחים בקבוק משקה מוגז והגז בורח החוצה. מהו סוג הכלי אחרי הפתיחה?',o:['מבודד','סגור','פתוח','אי אפשר לסווג'],a:2,e:'חומר (גז CO₂) עובר לסביבה, ולכן זה כלי פתוח.'},
+{q:'תגובה אקסותרמית מתרחשת בכלי מבודד. מה קורה לטמפרטורה בתוך הכלי?',o:['עולה, כי האנרגיה נשארת בפנים','יורדת','לא משתנה','אי אפשר לדעת'],a:0,e:'האנרגיה שמשתחררת לא יכולה לצאת, ולכן היא מעלה את הטמפרטורה של התכולה.'},
+{q:'במבחנה מתרחשת תגובה אנדותרמית והמבחנה מרגישה קרה. למה?',o:['המערכת פולטת קור','אנרגיה עוברת מהסביבה (היד, הדפנות) אל המערכת','אנרגיה עוברת מהמערכת אל היד','הטמפרטורה לא משתנה, זו תחושה'],a:1,e:'אין "קור" שעובר. האנרגיה עוברת מהיד אל המערכת, ולכן היד מתקררת.'},
+{q:'באיזה כלי כדאי להשתמש כדי למדוד במדויק את כמות האנרגיה שנפלטה בתגובה?',o:['כלי פתוח','כלי מבודד (קלורימטר)','כלי סגור דק','לא משנה'],a:1,e:'כלי מבודד מונע איבוד אנרגיה לסביבה, כך שכל האנרגיה נמדדת כשינוי טמפרטורה בתוכו.'}
+]},
+/* ================= 3 ================= */
+{
+id:'enthalpy', title:'אנתלפיה: תגובות אקסותרמיות ואנדותרמיות', short:'ΔH, גרף, יחידות ו-Q',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>בשריפת גז בישול משתחררת הרבה אנרגיה. בבישול ביצה משקיעים אנרגיה. איך אפשר לתאר את שתי התופעות בשפה אחת, כמותית?</p></div>
+<section class="blk"><h2>אנתלפיה ושינוי באנתלפיה</h2>
+<p><b>אנתלפיה (H)</b> מתארת את "תכולת האנרגיה" של חומרים בלחץ קבוע. אי אפשר למדוד אנתלפיה של חומר באופן מוחלט, אבל אפשר למדוד את <b>השינוי</b> בה במהלך תגובה:</p>
+<div class="eq">ΔH = H(products) − H(reactants)</div>
+<div class="split">
+<div class="cardlet"><h4 class="neg">תגובה אקסותרמית</h4><p>אנרגיה משתחררת לסביבה. האנתלפיה של התוצרים נמוכה מזו של המגיבים.</p><p><b class="f">ΔH &lt; 0</b></p></div>
+<div class="cardlet"><h4 class="pos">תגובה אנדותרמית</h4><p>אנרגיה נקלטת מהסביבה. האנתלפיה של התוצרים גבוהה מזו של המגיבים.</p><p><b class="f">ΔH &gt; 0</b></p></div>
+</div>
+</section>
+<div class="widget" data-w="diagram" data-mode="enthalpy"></div>
+<section class="blk"><h2>שתי דרכים לייצג ΔH</h2>
+<ol><li><b>בגרף</b> (דיאגרמת אנתלפיה): רמת המגיבים, רמת התוצרים, וחץ ΔH ביניהן.</li>
+<li><b>ליד ניסוח התגובה</b>:</li></ol>
+<div class="eq">2H<sub>2</sub>(g) + O<sub>2</sub>(g) → 2H<sub>2</sub>O(l) &nbsp;&nbsp; ΔH° = −572 kJ</div>
+<p>יחידות: <b>קילוג'אול (kJ)</b> או ג'אול (J). הסימן ° מציין תנאים סטנדרטיים.</p>
+</section>
+<section class="blk"><h2>ΔH מתייחס לניסוח</h2>
+<p>ערך ΔH מתאר את התגובה <b>בדיוק כפי שהיא מנוסחת</b>: מספרי המולים הם המקדמים. בדוגמה למעלה, כשמגיבים 2 מול H<sub>2</sub> עם 1 מול O<sub>2</sub> משתחררים 572 kJ.</p>
+<ul><li>אם הופכים את כיוון התגובה, הסימן של ΔH מתהפך: <span class="f">2H₂O(l) → 2H₂(g) + O₂(g)   ΔH° = +572 kJ</span></li>
+<li>אם מכפילים את המקדמים, מכפילים גם את ΔH.</li></ul>
+<div class="key"><h3>ΔH לעומת Q</h3><p><b>ΔH</b> הוא ערך קבוע לתגובה כפי שנוסחה. <b>Q</b> היא כמות האנרגיה שעברה בפועל, ותלויה בכמות החומר שהגיבה.</p>
+<p>לדוגמה: בשריפת 1 מול H<sub>2</sub> משתחררים 572 ÷ 2 = <b>286 kJ</b>. בשריפת 3 מול H<sub>2</sub> משתחררים 3 × 286 = <b>858 kJ</b>.</p></div>
+</section>
+<div class="widget" data-w="qcalc"></div>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['תגובות אקסותרמיות ואנדותרמיות','תגובה אקסותרמית ואנדותרמית כימיה'],['Enthalpy change explained','enthalpy change exothermic endothermic energy diagram']])}</section>
+`,
+quiz:[
+{q:'בתגובה אקסותרמית:',o:['ΔH חיובי, והתוצרים ברמת אנתלפיה גבוהה יותר','ΔH שלילי, והתוצרים ברמת אנתלפיה נמוכה יותר','ΔH שווה לאפס','האנרגיה עוברת מהסביבה למערכת'],a:1,e:'אנרגיה יוצאת מהמערכת, ולכן האנתלפיה של התוצרים נמוכה יותר ו-ΔH שלילי.'},
+{q:'בדיאגרמת אנתלפיה של תגובה אנדותרמית:',o:['רמת התוצרים גבוהה מרמת המגיבים','רמת התוצרים נמוכה מרמת המגיבים','הרמות שוות','אין רמת מגיבים'],a:0,e:'בתגובה אנדותרמית המערכת קולטת אנרגיה, ולכן התוצרים "גבוהים" יותר.'},
+{q:'N₂(g) + O₂(g) → 2NO(g)   ΔH° = +180 kJ. מה נכון?',o:['התגובה אקסותרמית','נפלטים 180 kJ לכל מול NO','התגובה אנדותרמית ונקלטים 180 kJ כשמגיב 1 מול N₂','נקלטים 360 kJ לכל מול N₂'],a:2,e:'ΔH חיובי = אנדותרמית. הערך מתייחס לניסוח: 1 מול N₂ עם 1 מול O₂ ליצירת 2 מול NO.'},
+{q:'2H₂(g) + O₂(g) → 2H₂O(l)   ΔH° = −572 kJ. כמה אנרגיה משתחררת בשריפת 1 מול H₂?',o:['572 kJ','1144 kJ','286 kJ','143 kJ'],a:2,e:'בניסוח יש 2 מול H₂ עבור 572 kJ, ולכן לכל מול: 572 ÷ 2 = 286 kJ.'},
+{q:'מהו ΔH של התגובה 2H₂O(l) → 2H₂(g) + O₂(g), בהסתמך על השאלה הקודמת?',o:['−572 kJ','+572 kJ','+286 kJ','−286 kJ'],a:1,e:'היפוך כיוון התגובה הופך את הסימן של ΔH.'},
+{q:'כמה אנרגיה (Q) משתחררת בשריפת 4 מול H₂ (לפי ΔH° = −572 kJ לניסוח עם 2 מול H₂)?',o:['572 kJ','2288 kJ','286 kJ','1144 kJ'],a:3,e:'4 מול הם פי 2 מהכמות שבניסוח: 2 × 572 = 1144 kJ.'},
+{q:'מהי יחידת המידה המקובלת לרישום ΔH ליד ניסוח התגובה?',o:['kJ','°C','mol/L','atm'],a:0,e:'ΔH הוא כמות אנרגיה, ונמדד בקילוג\'אול (או בג\'אול).'},
+{q:'מה מייצג החץ ΔH בדיאגרמת אנתלפיה?',o:['את גובה הפסגה','את ההפרש בין רמת האנתלפיה של התוצרים לזו של המגיבים','את הטמפרטורה','את מהירות התגובה'],a:1,e:'ΔH = H(תוצרים) − H(מגיבים), כלומר המרחק האנכי בין שתי הרמות.'},
+{q:'CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l)   ΔH° = −890 kJ. כמה אנרגיה משתחררת בשריפת 0.5 מול מתאן?',o:['890 kJ','1780 kJ','445 kJ','222.5 kJ'],a:2,e:'0.5 מול הם חצי מהכמות שבניסוח: 890 × 0.5 = 445 kJ.'},
+{q:'איזו טענה על ΔH ו-Q נכונה?',o:['ΔH ו-Q זהים תמיד','ΔH מתייחס לכמויות שבניסוח; Q תלוי בכמות שהגיבה בפועל','Q קבוע לכל תגובה','ΔH תלוי בגודל הכלי'],a:1,e:'ΔH הוא "תעודת הזהות" של התגובה כפי שנוסחה. Q מחושב לפי כמות החומר בניסוי.'}
+]},
+/* ================= 4 ================= */
+{
+id:'phases', title:'אנתלפיה בשינויי מצב צבירה', short:'התכה, אידוי, המראה',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>למה יוצאים מהבריכה ומרגישים קור, גם ביום חם? ומה קשור לזה הקטע השטוח בגרף החימום של מים?</p></div>
+<section class="blk"><h2>שינוי מצב צבירה הוא תהליך עם ΔH</h2>
+<p>במעבר ממוצק לנוזל ומנוזל לגז מתגברים על כוחות המשיכה בין החלקיקים. זה דורש אנרגיה, ולכן התהליכים האלה <b class="pos">אנדותרמיים</b>. התהליכים ההפוכים <b class="neg">אקסותרמיים</b>, עם אותו ערך ובסימן הפוך.</p>
+<div class="tblwrap"><table><thead><tr><th>תהליך</th><th>שם האנתלפיה</th><th>דוגמה: מים</th><th>תהליך הפוך</th></tr></thead><tbody>
+<tr><td>מוצק → נוזל</td><td>אנתלפיית התכה</td><td class="num">H₂O(s) → H₂O(l)  ΔH = +6.0 kJ</td><td>קפיאה: −6.0 kJ</td></tr>
+<tr><td>נוזל → גז</td><td>אנתלפיית אידוי</td><td class="num">H₂O(l) → H₂O(g)  ΔH = +40.7 kJ</td><td>עיבוי: −40.7 kJ</td></tr>
+<tr><td>מוצק → גז</td><td>אנתלפיית המראה</td><td class="num">H₂O(s) → H₂O(g)  ΔH ≈ +46.7 kJ</td><td>ריבוץ (גז → מוצק)</td></tr>
+</tbody></table></div>
+<p style="color:var(--muted);font-size:.92rem">הערכים למים: התכה ב-0°C, אידוי ב-100°C, לכל מול.</p>
+</section>
+<div class="widget" data-w="heating"></div>
+<section class="blk"><h2>למה אנתלפיית האידוי גדולה בהרבה?</h2>
+<p>בהתכה החלקיקים עדיין קרובים זה לזה, רק הסדר הקבוע של המוצק נשבר. באידוי החלקיקים מתרחקים מאוד וכמעט כל כוחות המשיכה ביניהם מתבטלים. לכן נדרשת הרבה יותר אנרגיה.</p>
+<div class="key"><h3>חשוב לזכור</h3><p>בשינוי מצב צבירה <b>לא נשברים קשרים קוולנטיים בתוך המולקולות</b>. מתגברים על כוחות בין המולקולות. המולקולה H<sub>2</sub>O נשארת H<sub>2</sub>O גם באדים.</p></div>
+<p>אנתלפיית ההמראה שווה לסכום אנתלפיית ההתכה ואנתלפיית האידוי. זו דוגמה ראשונה לחוק הס, שנלמד בפרק הבא.</p>
+</section>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['עקומת חימום של מים','עקומת חימום מים מצבי צבירה'],['Heating curve of water','heating curve of water enthalpy of fusion vaporization']])}</section>
+`,
+quiz:[
+{q:'התכה היא תהליך:',o:['אקסותרמי, ΔH < 0','אנדותרמי, ΔH > 0','ללא שינוי אנרגיה','אקסותרמי רק במים'],a:1,e:'כדי להתגבר על חלק מכוחות המשיכה בין החלקיקים צריך להשקיע אנרגיה.'},
+{q:'עיבוי (גז → נוזל) הוא תהליך:',o:['אקסותרמי','אנדותרמי','תלוי בכלי','ΔH = 0'],a:0,e:'עיבוי הפוך לאידוי. האידוי אנדותרמי, ולכן העיבוי אקסותרמי.'},
+{q:'אנתלפיית האידוי של מים (+40.7 kJ/mol) גדולה בהרבה מאנתלפיית ההתכה (+6.0 kJ/mol). למה?',o:['באידוי נשברים קשרים קוולנטיים O–H','באידוי החלקיקים מתרחקים מאוד וכמעט כל כוחות המשיכה ביניהם מתבטלים','בהתכה החלקיקים מתקרבים','לאדים יש מסה גדולה יותר'],a:1,e:'בהתכה החלקיקים נשארים קרובים. באידוי הם מתרחקים מאוד, ולכן נדרשת הרבה יותר אנרגיה.'},
+{q:'אם ΔH התכה = +6.0 kJ/mol ו-ΔH אידוי = +40.7 kJ/mol, מהו בקירוב ΔH ההמראה?',o:['+34.7 kJ/mol','+46.7 kJ/mol','−46.7 kJ/mol','+6.0 kJ/mol'],a:1,e:'מוצק → נוזל → גז: סכום השלבים 6.0 + 40.7 = 46.7 kJ/mol.'},
+{q:'מהו ΔH של התהליך H₂O(g) → H₂O(l)?',o:['+40.7 kJ','−40.7 kJ','−6.0 kJ','0'],a:1,e:'זה עיבוי, ההפך מאידוי, ולכן אותו ערך בסימן הפוך.'},
+{q:'כמה אנרגיה נדרשת לאידוי 2 מול מים (ΔH אידוי = +40.7 kJ/mol)?',o:['40.7 kJ','20.35 kJ','81.4 kJ','6.0 kJ'],a:2,e:'2 × 40.7 = 81.4 kJ.'},
+{q:'בגרף חימום של מים, מה מייצג קטע אופקי (טמפרטורה קבועה)?',o:['שינוי מצב צבירה','חימום הגז','תקלה במדחום','תגובה כימית'],a:0,e:'בזמן שינוי מצב צבירה האנרגיה משמשת להרחקת חלקיקים, לא להגדלת האנרגיה הקינטית הממוצעת.'},
+{q:'מה קורה לקשרים הקוולנטיים בתוך מולקולות המים כשהמים רותחים?',o:['הם נשברים','הם נשארים שלמים; מתגברים על כוחות בין המולקולות','הם מתחזקים','חצי מהם נשבר'],a:1,e:'האדים הם עדיין מולקולות H₂O. נשברים רק כוחות המשיכה בין המולקולות.'},
+{q:'למה אידוי זיעה מקרר את הגוף?',o:['האידוי אקסותרמי','האידוי אנדותרמי וקולט אנרגיה מהעור','הזיעה קרה מלכתחילה','האוויר מתחמם'],a:1,e:'כדי להתאדות, המים קולטים אנרגיה מהסביבה, כאן מהעור.'},
+{q:'חקלאים מרססים מים על עצי פרי בלילות כפור. מה ההסבר הכימי?',o:['קפיאת המים אנדותרמית ומקררת את הפרי','קפיאת המים אקסותרמית ומשחררת אנרגיה לפרי','המים מבודדים לחלוטין','המים מורידים את טמפרטורת ההתכה של הפרי'],a:1,e:'קפיאה (נוזל → מוצק) משחררת אנרגיה לסביבה, וזה מגן על הפרי מפני ירידה נוספת בטמפרטורה.'}
+]},
+/* ================= 5 ================= */
+{
+id:'hess', title:'חוק הס', short:'חישוב ΔH ממסלול עקיף',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>מטפסים לפסגת הר: פעם בשביל הקצר והתלול ופעם בשביל ארוך ומתפתל. האם הפרש הגובה בין המכונית לפסגה תלוי בשביל?</p></div>
+<section class="blk"><h2>הרעיון</h2>
+<div class="key"><h3>חוק הס</h3><p>השינוי באנתלפיה בתגובה תלוי רק במצב ההתחלתי (המגיבים) ובמצב הסופי (התוצרים), ולא במסלול. אם אפשר להגיע מהמגיבים לתוצרים בכמה שלבים, ΔH של התגובה הכוללת שווה לסכום ΔH של השלבים.</p></div>
+<p>למה זה שימושי? יש תגובות שקשה או בלתי אפשרי למדוד ישירות, למשל יצירת CO מפחמן בלי שייווצר גם CO<sub>2</sub>. בעזרת חוק הס מחשבים את ΔH שלהן מתגובות שכן אפשר למדוד.</p>
+</section>
+<section class="blk"><h2>שני כללי עבודה</h2>
+<ol><li><b>היפוך ניסוח</b>: הופכים את הסימן של ΔH.</li>
+<li><b>הכפלת ניסוח במספר</b>: מכפילים את ΔH באותו מספר.</li></ol>
+</section>
+<section class="blk"><h2>דוגמה פתורה</h2>
+<p>מטרה: <span class="f">C(s) + ½O₂(g) → CO(g)   ΔH = ?</span></p>
+<div class="eq">(1)  C(s) + O<sub>2</sub>(g) → CO<sub>2</sub>(g) &nbsp; ΔH = −393.5 kJ</div>
+<div class="eq">(2)  CO(g) + ½O<sub>2</sub>(g) → CO<sub>2</sub>(g) &nbsp; ΔH = −283.0 kJ</div>
+<ol><li>C צריך להיות בצד המגיבים, כמו ב-(1). משאירים את (1) כפי שהיא.</li>
+<li>CO צריך להיות בצד התוצרים, ולכן הופכים את (2): <span class="f">CO₂(g) → CO(g) + ½O₂(g)   ΔH = +283.0 kJ</span></li>
+<li>מחברים: CO<sub>2</sub> מבטל את עצמו, ומ-O<sub>2</sub> נשאר ½ בצד המגיבים.</li>
+<li>ΔH = −393.5 + 283.0 = <b class="neg">−110.5 kJ</b></li></ol>
+</section>
+<div class="widget" data-w="hess"></div>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['חוק הס – הסבר ותרגול','חוק הס כימיה תרגול'],['Hess\'s law explained','Hess\'s law enthalpy explained']])}</section>
+`,
+quiz:[
+{q:'מה קובע חוק הס?',o:['ΔH תלוי במסלול התגובה','ΔH תלוי רק במצב ההתחלתי ובמצב הסופי','ΔH תמיד שלילי','ΔH תלוי בקצב התגובה'],a:1,e:'בדומה להפרש גובה בין שתי נקודות: הוא לא תלוי בשביל שבחרתם.'},
+{q:'מכפילים ניסוח תגובה פי 2. מה קורה ל-ΔH?',o:['לא משתנה','מוכפל פי 2','מתחלק ב-2','הסימן מתהפך'],a:1,e:'פי 2 בכמויות = פי 2 באנרגיה.'},
+{q:'הופכים את כיוון הניסוח. מה קורה ל-ΔH?',o:['הסימן מתהפך, הערך המוחלט זהה','מוכפל פי 2','לא משתנה','הופך לאפס'],a:0,e:'התהליך ההפוך דורש (או משחרר) בדיוק את אותה אנרגיה, בכיוון ההפוך.'},
+{q:'C(s) + O₂(g) → CO₂(g)  ΔH = −393.5 kJ;  CO(g) + ½O₂(g) → CO₂(g)  ΔH = −283.0 kJ. מהו ΔH של C(s) + ½O₂(g) → CO(g)?',o:['−676.5 kJ','+110.5 kJ','−110.5 kJ','−283.0 kJ'],a:2,e:'משאירים את הראשונה, הופכים את השנייה (+283.0) ומחברים: −393.5 + 283.0 = −110.5 kJ.'},
+{q:'A → B  ΔH = +50 kJ;  B → C  ΔH = −80 kJ. מהו ΔH של A → C?',o:['+130 kJ','−30 kJ','+30 kJ','−130 kJ'],a:1,e:'מחברים את שני השלבים: +50 + (−80) = −30 kJ.'},
+{q:'איך מחשבים את אנתלפיית ההמראה של חומר בעזרת חוק הס?',o:['אנתלפיית אידוי פחות אנתלפיית התכה','סכום אנתלפיית ההתכה ואנתלפיית האידוי','אנתלפיית ההתכה כפול 2','אי אפשר'],a:1,e:'מוצק → נוזל → גז: מחברים את שני השלבים.'},
+{q:'מה היתרון העיקרי של חוק הס?',o:['הוא מאיץ תגובות','מאפשר לחשב ΔH לתגובות שקשה למדוד ישירות','מאפשר למדוד טמפרטורה','קובע אם תגובה מהירה'],a:1,e:'מצרפים תגובות שאפשר למדוד ומקבלים את ΔH של תגובה שאי אפשר למדוד ישירות.'},
+{q:'S(s) + O₂(g) → SO₂(g)  ΔH = −297 kJ;  2SO₂(g) + O₂(g) → 2SO₃(g)  ΔH = −198 kJ. מהו ΔH של S(s) + 1½O₂(g) → SO₃(g)?',o:['−495 kJ','−396 kJ','−99 kJ','+396 kJ'],a:1,e:'משאירים את הראשונה, מחלקים את השנייה ב-2 (−99 kJ) ומחברים: −297 + (−99) = −396 kJ.'},
+{q:'N₂(g) + O₂(g) → 2NO(g)  ΔH = +180 kJ;  2NO(g) + O₂(g) → 2NO₂(g)  ΔH = −114 kJ. מהו ΔH של N₂(g) + 2O₂(g) → 2NO₂(g)?',o:['+294 kJ','−66 kJ','+66 kJ','−294 kJ'],a:2,e:'2NO מתבטל כשמחברים את שתי התגובות כפי שהן: +180 + (−114) = +66 kJ.'},
+{q:'H₂(g) + ½O₂(g) → H₂O(l)  ΔH = −286 kJ;  H₂O(l) → H₂O(g)  ΔH = +44 kJ. מהו ΔH של H₂(g) + ½O₂(g) → H₂O(g)?',o:['−330 kJ','−242 kJ','+242 kJ','−286 kJ'],a:1,e:'מחברים: −286 + 44 = −242 kJ. יצירת אדים משחררת פחות אנרגיה, כי חלק ממנה "מושקע" באידוי.'}
+]},
+/* ================= 6 ================= */
+{
+id:'bonds', title:'אנתלפיות קשר', short:'שבירה ויצירה של קשרים',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>אם בכל תגובה כימית שוברים קשרים ויוצרים קשרים חדשים, מה קובע אם בסוף התגובה אנרגיה תשתחרר או תיקלט?</p></div>
+<section class="blk"><h2>שבירה דורשת, יצירה משחררת</h2>
+<div class="split">
+<div class="cardlet"><h4 class="pos">שבירת קשר</h4><p>תמיד <b>אנדותרמית</b>. צריך להשקיע אנרגיה כדי להרחיק אטומים שנמשכים זה לזה.</p></div>
+<div class="cardlet"><h4 class="neg">יצירת קשר</h4><p>תמיד <b>אקסותרמית</b>. כשאטומים נקשרים משתחררת אנרגיה.</p></div>
+</div>
+<div class="key"><h3>אנתלפיית קשר</h3><p>האנרגיה שיש להשקיע בפירוק מול קשרים קוולנטיים במולקולות של חומר במצב גז, לקבלת אטומים בודדים. היחידות: kJ/mol.</p><div class="eq" style="background:transparent">H<sub>2</sub>(g) → 2H(g) &nbsp; ΔH° = +436 kJ &nbsp;⇒&nbsp; ΔH<sub>B</sub>(H–H) = 436 kJ/mol</div><p>ככל שהקשר חזק יותר, אנתלפיית הקשר גדולה יותר. היא עולה עם סדר הקשר (C–C 348, C=C 612 kJ/mol) ויורדת כשרדיוס האטומים גדל.</p></div>
+</section>
+<div class="widget" data-w="bondsAnim"></div>
+<section class="blk"><h2>חישוב ΔH מאנתלפיות קשר</h2>
+<div class="eq">ΔH = Σ(bonds broken) − Σ(bonds formed)</div>
+<p>אפשר לדמיין את התגובה בשני שלבים תיאורטיים: (1) פירוק כל הקשרים במגיבים לאטומים בודדים, שלב אנדותרמי; (2) חיבור האטומים לקשרים של התוצרים, שלב אקסותרמי.</p>
+<p>במילים: <b>סכום אנתלפיות הקשרים שנשברים במגיבים</b> פחות <b>סכום אנתלפיות הקשרים שנוצרים בתוצרים</b>. אם יצירת הקשרים משחררת יותר ממה ששבירתם דרשה, התגובה אקסותרמית.</p>
+<div class="warn"><h3>מגבלה בתוכנית הלימודים</h3><p>החישוב מוגבל לתגובות שבהן <b>כל המגיבים והתוצרים במצב גז</b>. אנתלפיות הקשר מוגדרות לגז, ובמצבים אחרים יש גם כוחות בין־מולקולריים שלא נכללים בחישוב.</p></div>
+<div class="tblwrap"><table><thead><tr><th>קשר</th><th>אנתלפיית קשר (kJ/mol)</th><th>קשר</th><th>אנתלפיית קשר (kJ/mol)</th></tr></thead><tbody>
+<tr><td class="num">H–H</td><td class="num">436</td><td class="num">O=O</td><td class="num">498</td></tr>
+<tr><td class="num">Cl–Cl</td><td class="num">243</td><td class="num">O–H</td><td class="num">463</td></tr>
+<tr><td class="num">H–Cl</td><td class="num">432</td><td class="num">N≡N</td><td class="num">945</td></tr>
+<tr><td class="num">Br–Br</td><td class="num">193</td><td class="num">N–H</td><td class="num">391</td></tr>
+<tr><td class="num">H–Br</td><td class="num">366</td><td class="num">C–H</td><td class="num">413</td></tr>
+</tbody></table></div>
+<p style="color:var(--muted);font-size:.92rem">ערכים ממוצעים מקובלים. בבחינה השתמשו תמיד בערכים שניתנים בשאלה.</p>
+</section>
+<div class="widget" data-w="bondcalc"></div>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['חישוב ΔH מאנתלפיות קשר','אנתלפיית קשר חישוב שינוי אנתלפיה'],['Bond enthalpy calculations','bond enthalpy calculation enthalpy change']])}</section>
+`,
+quiz:[
+{q:'שבירת קשר כימי היא תהליך:',o:['אקסותרמי','אנדותרמי','ללא שינוי אנרגיה','אקסותרמי רק בגז'],a:1,e:'צריך להשקיע אנרגיה כדי להרחיק אטומים שנמשכים זה לזה.'},
+{q:'יצירת קשר כימי היא תהליך:',o:['אנדותרמי','אקסותרמי','תלוי בסוג הקשר','ΔH = 0'],a:1,e:'כשאטומים נקשרים משתחררת אנרגיה.'},
+{q:'מהי הנוסחה לחישוב ΔH מאנתלפיות קשר?',o:['Σ(קשרים שנוצרים) − Σ(קשרים שנשברים)','Σ(קשרים שנשברים) − Σ(קשרים שנוצרים)','Σ(קשרים שנשברים) + Σ(קשרים שנוצרים)','Σ(קשרים שנשברים) × 2'],a:1,e:'שבירה (+) פחות יצירה. אם היצירה גדולה יותר, ΔH יוצא שלילי.'},
+{q:'H₂(g) + Cl₂(g) → 2HCl(g). נתון: H–H = 436, Cl–Cl = 243, H–Cl = 432 (kJ/mol). מהו ΔH?',o:['+247 kJ','−185 kJ','−432 kJ','+185 kJ'],a:1,e:'שבירה: 436 + 243 = 679. יצירה: 2 × 432 = 864. ΔH = 679 − 864 = −185 kJ.'},
+{q:'למה חישוב ΔH מאנתלפיות קשר מוגבל לתגובות בגז?',o:['כי בגז אין קשרים','כי אנתלפיות הקשר מוגדרות לגז; בנוזל ובמוצק יש גם כוחות בין מולקולות','כי בגז התגובה מהירה','אין סיבה'],a:1,e:'במצבים אחרים צריך להתחשב גם באנרגיה של כוחות בין־מולקולריים, שלא נכללת באנתלפיות הקשר.'},
+{q:'מתי תגובה תהיה אקסותרמית?',o:['כשהאנרגיה המשתחררת ביצירת קשרים גדולה מזו הנדרשת לשבירתם','כשנשברים יותר קשרים','כשאין שבירת קשרים','תמיד'],a:0,e:'אם "ההכנסה" מיצירת קשרים גדולה מ"ההוצאה" על שבירה, נשאר עודף שמשתחרר.'},
+{q:'H₂(g) + Br₂(g) → 2HBr(g). נתון: H–H = 436, Br–Br = 193, H–Br = 366 (kJ/mol). מהו ΔH?',o:['−103 kJ','+103 kJ','−263 kJ','+263 kJ'],a:0,e:'שבירה: 436 + 193 = 629. יצירה: 2 × 366 = 732. ΔH = 629 − 732 = −103 kJ.'},
+{q:'2H₂(g) + O₂(g) → 2H₂O(g). נתון: H–H = 436, O=O = 498, O–H = 463 (kJ/mol). מהו ΔH?',o:['−482 kJ','+482 kJ','−1852 kJ','−963 kJ'],a:0,e:'שבירה: 2×436 + 498 = 1370. יצירה: 4 קשרי O–H = 4×463 = 1852. ΔH = 1370 − 1852 = −482 kJ.'},
+{q:'N₂(g) + 3H₂(g) → 2NH₃(g). נתון: N≡N = 945, H–H = 436, N–H = 391 (kJ/mol). מהו ΔH?',o:['+93 kJ','−93 kJ','−2346 kJ','−1172 kJ'],a:1,e:'שבירה: 945 + 3×436 = 2253. יצירה: 6 קשרי N–H = 6×391 = 2346. ΔH = 2253 − 2346 = −93 kJ.'},
+{q:'אנתלפיית הקשר N≡N גבוהה מאוד (945 kJ/mol). מה המשמעות?',o:['הקשר חלש ונשבר בקלות','נדרשת אנרגיה רבה לשבירת הקשר; מולקולת N₂ יציבה מאוד','N₂ מגיב מהר עם כל חומר','הקשר אינו קוולנטי'],a:1,e:'אנתלפיית קשר גבוהה = קשר חזק. זו הסיבה שחנקן באוויר כמעט אינו מגיב.'}
+]},
+/* ================= 7 ================= */
+{
+id:'rate', title:'קצב תגובה', short:'התנגשויות, אנרגיית שפעול, זרז',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>שריפת נייר באוויר היא תגובה אקסותרמית מאוד. אז למה הספר שלכם לא בוער מעצמו על המדף?</p></div>
+<section class="blk"><h2>מהו קצב תגובה?</h2>
+<p>קצב התגובה מתאר באיזו מהירות נצרכים המגיבים ונוצרים התוצרים: שינוי בכמות (או בריכוז) של חומר ביחידת זמן.</p>
+</section>
+<section class="blk"><h2>מודל ההתנגשויות</h2>
+<p>כדי שתתרחש תגובה, חלקיקי המגיבים צריכים <b>להתנגש</b>. אבל לא כל התנגשות מובילה לתגובה. התנגשות <b>פורייה</b> (אפקטיבית) היא התנגשות שבה:</p>
+<ul><li>האנרגיה של החלקיקים המתנגשים <b>גדולה או שווה לאנרגיית השפעול (E<sub>a</sub>)</b>;</li>
+<li>החלקיקים מתנגשים <b>בכיוון מתאים</b>.</li></ul>
+<div class="key"><h3>אנרגיית שפעול ותצמיד משופעל</h3><p><b>אנרגיית שפעול</b>: האנרגיה המינימלית שנדרשת כדי שהתנגשות תוביל לתגובה. בגרף זה ההפרש בין רמת המגיבים לפסגה.</p><p><b>תצמיד משופעל</b>: מצב המעבר בפסגת הגרף. קשרים ישנים נחלשים וקשרים חדשים מתחילים להיווצר. זה המצב בעל האנרגיה הגבוהה ביותר במהלך התגובה.</p></div>
+<p>תשובה לשאלת הפתיחה: לשריפת נייר יש אנרגיית שפעול גבוהה. בטמפרטורת החדר כמעט אין התנגשויות עם מספיק אנרגיה. גפרור מספק את האנרגיה הראשונית, ומשם החום שמשתחרר ממשיך את התגובה.</p>
+</section>
+<div class="widget" data-w="diagram" data-mode="rate"></div>
+<section class="blk"><h2>גורמים המשפיעים על קצב התגובה</h2>
+<div class="tblwrap"><table><thead><tr><th>גורם</th><th>השפעה</th><th>דוגמה</th></tr></thead><tbody>
+<tr><td><b>ריכוז</b></td><td>ריכוז גבוה יותר: יותר התנגשויות ביחידת זמן, קצב גבוה יותר</td><td>עץ בוער מהר יותר בחמצן טהור</td></tr>
+<tr><td><b>טמפרטורה</b></td><td>טמפרטורה גבוהה יותר: יותר חלקיקים עם אנרגיה ≥ E<sub>a</sub>, קצב גבוה יותר</td><td>מזון מתקלקל לאט במקרר</td></tr>
+<tr><td><b>שטח פנים</b></td><td>חומר מוצק מפורר: יותר חלקיקים חשופים להתנגשות</td><td>אבקת סוכר מתמוססת מהר יותר מקובייה</td></tr>
+<tr><td><b>סוג המגיבים</b></td><td>לכל תגובה אנרגיית שפעול משלה. E<sub>a</sub> נמוכה יותר: תגובה מהירה יותר</td><td>נתרן מגיב עם מים מהר יותר מברזל</td></tr>
+</tbody></table></div>
+</section>
+<div class="widget" data-w="collisions"></div>
+<section class="blk"><h2>זרז</h2>
+<p><b>זרז</b> הוא חומר שמגביר את קצב התגובה ואינו נצרך בה. הוא מאפשר מסלול תגובה חלופי עם <b>אנרגיית שפעול נמוכה יותר</b>.</p>
+<div class="warn"><h3>שימו לב</h3><p>זרז <b>לא משנה את ΔH</b>. רמות המגיבים והתוצרים נשארות במקומן, רק הפסגה יורדת. בגרף שלמעלה אפשר להפעיל את מתג הזרז ולראות זאת.</p></div>
+</section>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['מודל ההתנגשויות ואנרגיית שפעול','קצב תגובה מודל ההתנגשויות אנרגיית שפעול'],['Collision theory and catalysts','collision theory activation energy catalyst animation']])}</section>
+`,
+quiz:[
+{q:'לפי מודל ההתנגשויות, מתי התנגשות בין חלקיקים מובילה לתגובה?',o:['בכל התנגשות','כשהאנרגיה בהתנגשות גדולה או שווה לאנרגיית השפעול, ובכיוון מתאים','רק כשהחלקיקים איטיים','רק בנוכחות זרז'],a:1,e:'רק התנגשויות אפקטיביות מובילות לתגובה: מספיק אנרגיה וכיוון מתאים.'},
+{q:'מהי אנרגיית שפעול?',o:['ΔH של התגובה','האנרגיה המינימלית הדרושה כדי שהתנגשות תוביל לתגובה','האנרגיה של התוצרים','הטמפרטורה שבה התגובה מתחילה'],a:1,e:'בגרף: ההפרש בין רמת המגיבים לבין הפסגה.'},
+{q:'מהו תצמיד משופעל?',o:['תוצר יציב של התגובה','מצב המעבר בעל האנרגיה הגבוהה ביותר במהלך התגובה','זרז','מגיב שלא הגיב'],a:1,e:'בתצמיד המשופעל קשרים ישנים נחלשים וחדשים מתחילים להיווצר. הוא נמצא בפסגת הגרף.'},
+{q:'מעלים את הטמפרטורה. מה קורה לקצב התגובה ולמה?',o:['יורד, כי החלקיקים מתרחקים','עולה, כי יותר חלקיקים בעלי אנרגיה ≥ Ea ויש יותר התנגשויות','לא משתנה','עולה, כי אנרגיית השפעול קטנה'],a:1,e:'טמפרטורה לא משנה את Ea. היא מגדילה את חלק החלקיקים שיש להם מספיק אנרגיה.'},
+{q:'אבקת אבץ מגיבה עם חומצה מהר יותר מגוש אבץ באותה מסה. למה?',o:['לאבקה Ea גבוהה יותר','לאבקה שטח פנים גדול יותר, ולכן יותר התנגשויות','האבקה חמה יותר','לגוש יש יותר אטומים'],a:1,e:'יותר חלקיקים חשופים על פני השטח, ולכן יותר התנגשויות ביחידת זמן.'},
+{q:'מה עושה זרז?',o:['מגדיל את ΔH','מוריד את אנרגיית השפעול ואינו נצרך בתגובה','מעלה את טמפרטורת המגיבים','נצרך במהלך התגובה'],a:1,e:'זרז מאפשר מסלול חלופי עם Ea נמוכה יותר.'},
+{q:'מגדילים את ריכוז אחד המגיבים. מה קורה?',o:['יש יותר התנגשויות ביחידת זמן, והקצב עולה','הקצב יורד','Ea יורדת','ΔH משתנה'],a:0,e:'יותר חלקיקים באותו נפח = יותר התנגשויות בכל שנייה.'},
+{q:'איך נראית השפעת זרז בדיאגרמת אנרגיה?',o:['רמת התוצרים יורדת','הפסגה נמוכה יותר; רמות המגיבים והתוצרים לא משתנות','רמת המגיבים עולה','הגרף לא משתנה'],a:1,e:'הזרז משנה רק את Ea. ΔH נשאר זהה.'},
+{q:'לשריפת נייר ΔH שלילי מאוד, אבל נייר לא בוער מעצמו בטמפרטורת החדר. מה ההסבר?',o:['התגובה אנדותרמית','לתגובה אנרגיית שפעול גבוהה','אין חמצן בחדר','נייר אינו מכיל פחמן'],a:1,e:'ΔH קובע כמה אנרגיה תשתחרר, לא כמה מהר. Ea גבוהה גורמת לתגובה להיות איטית מאוד בלי הצתה.'},
+{q:'לתגובה א\' Ea = 50 kJ ולתגובה ב\' Ea = 120 kJ, באותם תנאים. מה סביר?',o:['תגובה ב\' מהירה יותר','תגובה א\' מהירה יותר','הקצבים שווים','אי אפשר להשוות בלי ΔH'],a:1,e:'Ea נמוכה יותר: יותר התנגשויות אפקטיביות, ולכן קצב גבוה יותר.'}
+]},
+/* ================= 8 ================= */
+{
+id:'entropy', title:'אנטרופיה וספונטניות', short:'ΔS מערכת, סביבה ויקום',
+html:`
+<div class="hook"><b>שאלת פתיחה</b><p>טיפת דיו בכוס מים מתפזרת מעצמה. האם ראיתם פעם דיו שמתאסף בחזרה לטיפה אחת? מה "מכוון" את התהליכים בטבע?</p></div>
+<section class="blk"><h2>מהי אנטרופיה?</h2>
+<p><b>אנטרופיה (S)</b> היא מדד לפיזור האנרגיה ולפיזור החלקיקים בחומר. אפשר לחשוב עליה כמספר הדרכים (המצבים המיקרוסקופיים) שבהם אפשר לסדר את החלקיקים ואת האנרגיה שלהם. יותר אפשרויות = אנטרופיה גבוהה יותר.</p>
+<div class="eq">S(solid) &lt; S(liquid) &lt; S(gas)</div>
+<p>לאותו חומר: במוצק החלקיקים מסודרים וקבועים במקומם, בנוזל הם נעים זה ליד זה, ובגז הם מפוזרים בכל הכלי. לכן לגז האנטרופיה הגבוהה ביותר.</p>
+</section>
+<div class="widget" data-w="spread"></div>
+<section class="blk"><h2>הערכת הסימן של ΔS המערכת</h2>
+<ol><li><b>שינוי במצב צבירה</b>: מעבר לכיוון גז (התכה, אידוי, המראה) → ΔS > 0.</li>
+<li><b>שינוי במספר מולי הגז</b>: אם בתוצרים יש יותר מולי גז מאשר במגיבים → ΔS > 0.</li></ol>
+<div class="eq">N<sub>2</sub>(g) + 3H<sub>2</sub>(g) → 2NH<sub>3</sub>(g) &nbsp;&nbsp; 4 mol gas → 2 mol gas &nbsp; ⇒ ΔS<sub>sys</sub> &lt; 0</div>
+<p>חישוב כמותי, לפי ערכי S° מטבלה (בהתחשב במקדמים):</p>
+<div class="eq">ΔS°<sub>sys</sub> = ΣS°(products) − ΣS°(reactants)</div>
+</section>
+<section class="blk"><h2>הסביבה והיקום</h2>
+<p>תגובה אקסותרמית משחררת אנרגיה לסביבה ומגדילה את פיזור האנרגיה בה, כלומר את האנטרופיה של הסביבה:</p>
+<div class="eq">ΔS°<sub>surr</sub> = −ΔH° / T</div>
+<div class="warn"><h3>מלכודת יחידות</h3><p>ΔH נתון בדרך כלל ב-<b>kJ</b> ו-ΔS ב-<b>J/K</b>. כפלו את ΔH ב-1000 לפני החילוק! T בקלווין.</p></div>
+<div class="key"><h3>החוק השני של התרמודינמיקה</h3><div class="eq" style="background:transparent">ΔS°<sub>univ</sub> = ΔS°<sub>sys</sub> + ΔS°<sub>surr</sub></div><p>תהליך <b>ספונטני</b> (מתרחש מעצמו) הוא תהליך שבו האנטרופיה של היקום גדלה: <b>ΔS<sub>univ</sub> &gt; 0</b>. אם ΔS<sub>univ</sub> &lt; 0, התהליך אינו ספונטני בתנאים אלה, והתהליך ההפוך הוא הספונטני.</p></div>
+<p><b>דוגמה:</b> ליצירת אמוניה ב-298K: ΔH° = −92 kJ, ΔS°<sub>sys</sub> = −199 J/K.<br>
+ΔS°<sub>surr</sub> = −(−92,000) ÷ 298 = +308.7 J/K<br>
+ΔS°<sub>univ</sub> = −199 + 308.7 = <b class="pos">+109.7 J/K</b>, ולכן התגובה ספונטנית בטמפרטורה זו.</p>
+</section>
+<div class="widget" data-w="entcalc"></div>
+<section class="blk"><h3>סרטונים להעמקה</h3>${vid([['אנטרופיה וספונטניות','אנטרופיה ספונטניות כימיה החוק השני'],['Entropy and the second law','entropy second law of thermodynamics chemistry spontaneity']])}</section>
+`,
+quiz:[
+{q:'מהי אנטרופיה?',o:['כמות החום בחומר','מדד לפיזור האנרגיה והחלקיקים, כלומר למספר המצבים המיקרוסקופיים האפשריים','הטמפרטורה של החומר','מהירות התגובה'],a:1,e:'יותר דרכים לסדר חלקיקים ואנרגיה = אנטרופיה גבוהה יותר.'},
+{q:'מהו הסדר הנכון של האנטרופיה של אותו חומר?',o:['מוצק > נוזל > גז','נוזל > גז > מוצק','גז > נוזל > מוצק','כולם שווים'],a:2,e:'בגז החלקיקים מפוזרים ביותר, ולכן לו האנטרופיה הגבוהה ביותר.'},
+{q:'מהו סימן ΔS של המערכת בתהליך H₂O(l) → H₂O(g)?',o:['חיובי','שלילי','אפס','תלוי בכלי'],a:0,e:'מעבר לגז מגדיל את פיזור החלקיקים.'},
+{q:'מהו סימן ΔS של המערכת בתגובה N₂(g) + 3H₂(g) → 2NH₃(g)?',o:['חיובי','שלילי','אפס','אי אפשר לדעת'],a:1,e:'4 מול גז הופכים ל-2 מול גז. פחות חלקיקי גז = פחות פיזור.'},
+{q:'מהו סימן ΔS של המערכת בתגובה CaCO₃(s) → CaO(s) + CO₂(g)?',o:['שלילי','חיובי','אפס','תלוי ב-ΔH'],a:1,e:'מתוך מוצק נוצר גז: מספר מולי הגז עולה מ-0 ל-1.'},
+{q:'מה נכון לגבי ΔS של הסביבה בתגובה אקסותרמית?',o:['ΔSsurr חיובי, כי אנרגיה משתחררת לסביבה ומתפזרת בה','ΔSsurr שלילי','ΔSsurr = 0','ΔSsurr = ΔH'],a:0,e:'ΔSsurr = −ΔH/T. כש-ΔH שלילי, ΔSsurr חיובי.'},
+{q:'ΔH° = −92 kJ, T = 298 K. מהו ΔS°surr?',o:['−0.309 J/K','+308.7 J/K','−308.7 J/K','+0.309 J/K'],a:1,e:'ΔSsurr = −(−92,000 J) ÷ 298 K = +308.7 J/K. זכרו להמיר kJ ל-J.'},
+{q:'לפי החוק השני של התרמודינמיקה, תהליך ספונטני הוא תהליך שבו:',o:['ΔSsys > 0','ΔH < 0','ΔSuniv > 0','ΔSsurr < 0'],a:2,e:'הקריטריון לספונטניות הוא עלייה באנטרופיה של היקום, לא של המערכת לבדה.'},
+{q:'לתגובה: ΔS°sys = −199 J/K, ΔS°surr = +308.7 J/K. מה המסקנה?',o:['ΔSuniv = −507.7 J/K, לא ספונטנית','ΔSuniv = +109.7 J/K, ספונטנית','ΔSuniv = +507.7 J/K, לא ספונטנית','אי אפשר לקבוע'],a:1,e:'−199 + 308.7 = +109.7 J/K. חיובי, ולכן ספונטנית.'},
+{q:'קרח נמס מעצמו ב-25°C אף שההתכה אנדותרמית. למה?',o:['ΔSsurr חיובי','העלייה באנטרופיה של המערכת גדולה מהירידה באנטרופיה של הסביבה, ולכן ΔSuniv > 0','ההתכה אקסותרמית בטמפרטורה זו','ΔH = 0 ב-25°C'],a:1,e:'ב-298K: ΔSsurr ≈ −6010/298 ≈ −20.2 J/K, ו-ΔSsys ≈ +22 J/K. הסכום חיובי.'}
+]}
+];
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, attrs = {}, html = '') => { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (html) e.innerHTML = html; return e; };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = (x, d = 1) => { const v = Math.round(x * Math.pow(10, d)) / Math.pow(10, d); return (v > 0 ? '+' : '') + v.toLocaleString('en-US'); };
+
+function fitCanvas(cv, ratio) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(240, cv.parentElement.clientWidth - 0);
+  const h = Math.round(w * ratio);
+  cv.style.height = h + 'px';
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function colors() { return { ink: css('--ink'), muted: css('--muted'), line: css('--line'), cold: css('--cold'), heat: css('--heat'), good: css('--good'), sunk: css('--sunk'), surface: css('--surface'), paper: css('--paper') }; }
+function loop(fn) { let id = 0, on = false; const step = t => { if (!on) return; fn(t); id = requestAnimationFrame(step); }; return { start() { if (on) return; on = true; id = requestAnimationFrame(step); }, stop() { on = false; cancelAnimationFrame(id); } }; }
+function head(box, tag, title, sim) { box.appendChild(el('div', { class: 'wtitle' }, `<span class="wtag ${sim ? 'sim' : ''}">${tag}</span><h3>${title}</h3>`)); }
+function arrow(ctx, x1, y1, x2, y2, col, w = 2) { ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); const a = Math.atan2(y2 - y1, x2 - x1); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 9 * Math.cos(a - .4), y2 - 9 * Math.sin(a - .4)); ctx.lineTo(x2 - 9 * Math.cos(a + .4), y2 - 9 * Math.sin(a + .4)); ctx.closePath(); ctx.fill(); }
+function txt(ctx, s, x, y, col, size = 13, align = 'center', bold = false) { ctx.fillStyle = col; ctx.font = `${bold ? '700 ' : ''}${size}px Assistant, Arial, sans-serif`; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.direction = 'rtl'; ctx.fillText(s, x, y); ctx.direction = 'ltr'; }
+
+/* ================= widgets ================= */
+const W = {};
+
+/* 1. particles: temperature vs internal energy */
+W.particles = box => {
+  head(box, 'הדמיה', 'אותה טמפרטורה, כמות חומר שונה', true);
+  const wrap = el('div', { class: 'split' });
+  const mk = (n, label) => { const c = el('div', { class: 'cardlet' }); c.innerHTML = `<h4>${label}</h4>`; const cv = el('canvas'); c.appendChild(cv); const r = el('div', { class: 'readout' }); c.appendChild(r); wrap.appendChild(c); return { n, cv, r, ps: [] }; };
+  const A = mk(10, 'כוס קטנה (10 חלקיקים)'), B = mk(36, 'דלי גדול (36 חלקיקים)');
+  box.appendChild(wrap);
+  const ctr = el('div', { class: 'controls' }, `<label for="pT">טמפרטורה <input id="pT" type="range" min="100" max="600" value="300"></label><span class="readout"><span>T = <b id="pTv">300</b> K</span></span>`);
+  box.appendChild(ctr);
+  box.appendChild(el('p', { class: 'caption' }, 'הזיזו את המחוון. שימו לב: האנרגיה הקינטית הממוצעת זהה בשני הכלים, אבל האנרגיה הכוללת בדלי גדולה יותר. לכל חלקיק מהירות משלו, והטמפרטורה מתארת את הממוצע.'));
+  let T = 300; const sl = $('#pT', box);
+  sl.addEventListener('input', () => { const nT = +sl.value; const f = Math.sqrt(nT / T); [A, B].forEach(S => S.ps.forEach(p => { p.vx *= f; p.vy *= f; })); T = nT; $('#pTv', box).textContent = T; });
+  const init = S => { const { w, h } = fitCanvas(S.cv, .62); S.w = w; S.h = h; S.ps = []; for (let i = 0; i < S.n; i++) { const sp = (0.6 + Math.random() * 1.2) * Math.sqrt(T / 300) * 1.4; const a = Math.random() * 6.283; S.ps.push({ x: 10 + Math.random() * (w - 20), y: 10 + Math.random() * (h - 20), vx: sp * Math.cos(a), vy: sp * Math.sin(a) }); } };
+  const draw = S => {
+    const ctx = S.cv.getContext('2d'), c = colors(); ctx.clearRect(0, 0, S.w, S.h);
+    let ek = 0;
+    S.ps.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 6 || p.x > S.w - 6) p.vx *= -1; if (p.y < 6 || p.y > S.h - 6) p.vy *= -1; p.x = Math.min(Math.max(p.x, 6), S.w - 6); p.y = Math.min(Math.max(p.y, 6), S.h - 6);
+      const e = p.vx * p.vx + p.vy * p.vy; ek += e; const hot = Math.min(1, e / (8 * T / 300));
+      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, 6.283); ctx.fillStyle = hot > .5 ? c.heat : c.cold; ctx.fill(); });
+    const avg = ek / S.n;
+    S.r.innerHTML = `<span>Ek ממוצעת ∝ <b>${(T / 100).toFixed(1)}</b></span><span>אנרגיה כוללת ∝ <b>${(T / 100 * S.n).toFixed(0)}</b></span>`;
+  };
+  const L = loop(() => { draw(A); draw(B); });
+  return { start() { init(A); init(B); L.start(); }, stop() { L.stop(); } };
+};
+
+/* 2. vessels */
+W.vessels = box => {
+  head(box, 'הדמיה', 'מה עובר דרך הדפנות?', true);
+  const cv = el('canvas'); box.appendChild(cv);
+  const ctr = el('div', { class: 'controls' }, `<label for="vMode">התגובה במערכת <select id="vMode"><option value="exo">אקסותרמית (אנרגיה יוצאת)</option><option value="endo">אנדותרמית (אנרגיה נכנסת)</option></select></label>`);
+  box.appendChild(ctr);
+  box.appendChild(el('p', { class: 'caption' }, 'חיצים כתומים: אנרגיה. נקודות כחולות: חלקיקי גז (חומר). בכלי הפתוח עוברים שניהם, בכלי הסגור רק אנרגיה, ובכלי המבודד אף אחד מהם.'));
+  let W_, H_, t = 0, gas = [];
+  const init = () => { const r = fitCanvas(cv, .42); W_ = r.w; H_ = r.h; gas = [0, 1, 2].map(() => Array.from({ length: 10 }, () => ({ x: Math.random(), y: Math.random(), vx: (Math.random() - .5) * .01, vy: (Math.random() - .5) * .01, out: false }))); };
+  const L = loop(() => {
+    const ctx = cv.getContext('2d'), c = colors(); ctx.clearRect(0, 0, W_, H_); t += 1;
+    const mode = $('#vMode', box).value;
+    const names = ['פתוח', 'סגור', 'מבודד'];
+    const cw = W_ / 3;
+    for (let i = 0; i < 3; i++) {
+      const cx = W_ - cw * (i + .5), bw = Math.min(cw * .5, 110), bh = H_ * .5, bx = cx - bw / 2, by = H_ * .3;
+      ctx.lineWidth = i === 2 ? 6 : 2.5; ctx.strokeStyle = c.ink;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by); ctx.stroke();
+      if (i === 2) { ctx.lineWidth = 1.5; ctx.strokeStyle = c.muted; ctx.strokeRect(bx - 7, by - 7, bw + 14, bh + 14); }
+      if (i > 0) { ctx.lineWidth = i === 2 ? 6 : 3; ctx.strokeStyle = c.ink; ctx.beginPath(); ctx.moveTo(bx - 4, by); ctx.lineTo(bx + bw + 4, by); ctx.stroke(); }
+      txt(ctx, 'כלי ' + names[i], cx, H_ * .92, c.ink, 14, 'center', true);
+      // gas
+      gas[i].forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (!p.out) { if (p.x < 0 || p.x > 1) p.vx *= -1; if (p.y > 1) p.vy *= -1; if (p.y < 0) { if (i === 0 && Math.random() < .5) { p.out = true; p.vy = -Math.abs(p.vy) - .004; } else p.vy *= -1; } }
+        if (p.out && p.y < -1.3) { p.out = false; p.x = Math.random(); p.y = .9; }
+        const px = bx + 6 + p.x * (bw - 12), py = by + 6 + p.y * (bh - 12);
+        ctx.beginPath(); ctx.arc(px, py, 4, 0, 6.283); ctx.fillStyle = c.cold; ctx.fill();
+      });
+      // energy arrows
+      if (i < 2) {
+        const ph = (t % 90) / 90;
+        for (const side of [-1, 1]) {
+          const y = by + bh * .55;
+          const inner = side < 0 ? bx : bx + bw, outer = inner + side * 34;
+          const [x1, x2] = mode === 'exo' ? [inner + side * 4, outer] : [outer, inner + side * 4];
+          ctx.globalAlpha = .35 + .65 * Math.sin(ph * Math.PI);
+          arrow(ctx, x1, y, x2, y, c.heat, 3);
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+  });
+  return { start() { init(); L.start(); }, stop() { L.stop(); } };
+};
+
+/* 3. energy diagram (enthalpy / rate) with narrated "video" */
+W.diagram = box => {
+  const rate = box.dataset.mode === 'rate';
+  head(box, 'סרטון אנימציה', rate ? 'מסע לאורך מסלול התגובה' : 'דיאגרמת אנתלפיה צעד אחר צעד');
+  const cv = el('canvas'); box.appendChild(cv);
+  const cap = el('p', { class: 'caption', 'aria-live': 'polite' }); box.appendChild(cap);
+  const ctr = el('div', { class: 'controls' });
+  ctr.innerHTML = `<button class="btn" data-a="play">הפעלה ▶</button><button class="btn ghost" data-a="next">שלב הבא</button>
+  <label for="dg${rate ? 'r' : 'e'}">סוג התגובה <select id="dg${rate ? 'r' : 'e'}"><option value="exo">אקסותרמית</option><option value="endo">אנדותרמית</option></select></label>
+  ${rate ? '<label for="dgCat"><input type="checkbox" id="dgCat"> עם זרז</label>' : ''}`;
+  box.appendChild(ctr);
+  const stepsE = [
+    'המגיבים נמצאים ברמת אנתלפיה מסוימת. זו נקודת ההתחלה.',
+    'במהלך התגובה קשרים נשברים ונוצרים. הכדור מייצג את המערכת בדרכה מהמגיבים לתוצרים.',
+    'התוצרים מגיעים לרמת אנתלפיה חדשה.',
+    'ΔH הוא ההפרש: H(תוצרים) − H(מגיבים). '
+  ];
+  const stepsR = [
+    'המגיבים מתנגשים. כדי שהתגובה תתחיל, הם צריכים "לטפס" על מחסום אנרגיה.',
+    'הגובה מהמגיבים ועד הפסגה הוא אנרגיית השפעול, Ea.',
+    'בפסגה נמצא התצמיד המשופעל: קשרים ישנים נחלשים, קשרים חדשים מתחילים להיווצר.',
+    'אחרי הפסגה המערכת "יורדת" אל התוצרים. ΔH הוא ההפרש בין התוצרים למגיבים, וזרז לא משנה אותו.'
+  ];
+  const steps = rate ? stepsR : stepsE;
+  let step = 0, prog = 0, playing = false, W_, H_;
+  const sel = $('select', ctr), cat = $('#dgCat', ctr);
+  const curve = (x, exo, catOn) => { // x 0..1 -> y level 0..1 (1=top)
+    const r = exo ? .62 : .32, p = exo ? .3 : .64, peak = rate ? (catOn ? .7 : .92) : .8;
+    const base = x < .5 ? r + (peak - r) * Math.pow(Math.sin(Math.min(x / .5, 1) * Math.PI / 2), 2) : p + (peak - p) * Math.pow(Math.cos(Math.min((x - .5) / .5, 1) * Math.PI / 2), 2);
+    if (x < .12) return r; if (x > .88) return p;
+    const xx = (x - .12) / .76; return xx < .5 ? r + (peak - r) * Math.pow(Math.sin(xx / .5 * Math.PI / 2), 2) : p + (peak - p) * Math.pow(Math.cos((xx - .5) / .5 * Math.PI / 2), 2);
+  };
+  const draw = () => {
+    const ctx = cv.getContext('2d'), c = colors(); ctx.clearRect(0, 0, W_, H_);
+    const exo = sel.value === 'exo', catOn = cat && cat.checked;
+    const L = 46, R = W_ - 20, T = 20, B = H_ - 34;
+    const X = x => L + x * (R - L), Y = v => B - v * (B - T);
+    ctx.strokeStyle = c.muted; ctx.lineWidth = 1.5; arrow(ctx, L, B, L, T - 6, c.muted, 1.5); arrow(ctx, L, B, R + 6, B, c.muted, 1.5);
+    ctx.save(); ctx.translate(16, (T + B) / 2); ctx.rotate(-Math.PI / 2); txt(ctx, rate ? 'אנרגיה' : 'אנתלפיה (H)', 0, 0, c.muted, 12); ctx.restore();
+    txt(ctx, 'מהלך התגובה', (L + R) / 2, H_ - 12, c.muted, 12);
+    // curve (shown in rate mode; in enthalpy mode drawn faint after step 1)
+    const showCurve = rate || step >= 1;
+    if (showCurve) {
+      ctx.strokeStyle = rate ? c.ink : c.line; ctx.lineWidth = rate ? 3 : 2; ctx.setLineDash(rate ? [] : [5, 5]);
+      ctx.beginPath(); for (let i = 0; i <= 200; i++) { const x = i / 200; const y = curve(x, exo, false); i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)); } ctx.stroke(); ctx.setLineDash([]);
+      if (catOn) { ctx.strokeStyle = c.good; ctx.lineWidth = 3; ctx.setLineDash([7, 5]); ctx.beginPath(); for (let i = 0; i <= 200; i++) { const x = i / 200; const y = curve(x, exo, true); i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)); } ctx.stroke(); ctx.setLineDash([]); txt(ctx, 'עם זרז', X(.5), Y(curve(.5, exo, true)) + 16, c.good, 12, 'center', true); }
+    }
+    const r = curve(0, exo), p = curve(1, exo);
+    ctx.lineWidth = 4; ctx.strokeStyle = c.ink;
+    ctx.beginPath(); ctx.moveTo(X(.02), Y(r)); ctx.lineTo(X(.2), Y(r)); ctx.stroke();
+    txt(ctx, 'מגיבים', X(.11), Y(r) + 16, c.ink, 13, 'center', true);
+    if (step >= 2 || rate && step >= 3) { ctx.beginPath(); ctx.moveTo(X(.8), Y(p)); ctx.lineTo(X(.98), Y(p)); ctx.stroke(); txt(ctx, 'תוצרים', X(.89), Y(p) + 16, c.ink, 13, 'center', true); }
+    if (rate && step >= 1) { const pk = curve(.5, exo, false); ctx.setLineDash([3, 4]); ctx.strokeStyle = c.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(.2), Y(r)); ctx.lineTo(X(.5), Y(r)); ctx.stroke(); ctx.setLineDash([]); arrow(ctx, X(.36), Y(r), X(.36), Y(pk) + 3, c.cold, 2.5); txt(ctx, 'Ea', X(.36) - 18, Y((r + pk) / 2), c.cold, 14, 'center', true); }
+    if (rate && step >= 2) { const pk = curve(.5, exo, false); ctx.beginPath(); ctx.arc(X(.5), Y(pk), 7, 0, 6.283); ctx.strokeStyle = c.heat; ctx.lineWidth = 2; ctx.stroke(); txt(ctx, 'תצמיד משופעל', X(.5), Y(pk) - 16, c.heat, 13, 'center', true); }
+    if (step >= 3) { const xx = X(.9) - 50; ctx.setLineDash([3, 4]); ctx.strokeStyle = c.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(.2), Y(r)); ctx.lineTo(xx + 8, Y(r)); ctx.stroke(); ctx.setLineDash([]); arrow(ctx, xx, Y(r), xx, Y(p), exo ? c.heat : c.cold, 3); txt(ctx, exo ? 'ΔH < 0' : 'ΔH > 0', xx - 34, Y((r + p) / 2), exo ? c.heat : c.cold, 14, 'center', true); }
+    // ball
+    const bx = step === 0 ? 0.1 : step === 1 ? .12 + .76 * Math.min(prog, 1) * (rate ? .5 / .76 * 1.0 : 1) : (rate && step === 2 ? .5 : .9);
+    let x = step === 0 ? .1 : (rate ? (step === 1 ? .12 + prog * .38 : step === 2 ? .5 : .5 + prog * .4) : (step === 1 ? .1 + prog * .8 : .9));
+    const y = curve(x, exo, catOn);
+    ctx.beginPath(); ctx.arc(X(x), Y(y) - 9, 8, 0, 6.283); ctx.fillStyle = c.heat; ctx.fill();
+  };
+  const setStep = s => { step = Math.max(0, Math.min(s, steps.length - 1)); prog = 0; let t = steps[step]; if (!rate && step === 3) t += sel.value === 'exo' ? 'התוצרים נמוכים מהמגיבים, ולכן ΔH שלילי: אנרגיה שוחררה לסביבה.' : 'התוצרים גבוהים מהמגיבים, ולכן ΔH חיובי: אנרגיה נקלטה מהסביבה.'; cap.textContent = `שלב ${step + 1} מתוך ${steps.length}: ${t}`; };
+  let last = 0, hold = 0;
+  const L = loop(ts => { const dt = Math.min(50, ts - (last || ts)); last = ts; if (playing) { prog = Math.min(1, prog + dt / 1800); if (prog >= 1) { hold += dt; if (hold > 1400) { hold = 0; if (step < steps.length - 1) setStep(step + 1); else { playing = false; $('[data-a=play]', ctr).textContent = 'הפעלה מחדש ↺'; } } } } draw(); });
+  ctr.addEventListener('click', e => { const a = e.target.dataset.a; if (a === 'play') { if (!playing && step === steps.length - 1) setStep(0); playing = !playing; e.target.textContent = playing ? 'השהיה ❚❚' : 'המשך ▶'; } if (a === 'next') { playing = false; $('[data-a=play]', ctr).textContent = 'המשך ▶'; setStep(step + 1 > steps.length - 1 ? 0 : step + 1); prog = 1; } });
+  sel.addEventListener('change', () => setStep(step)); if (cat) cat.addEventListener('change', () => { if (step < 1) setStep(3); });
+  setStep(0);
+  return { start() { const r = fitCanvas(cv, .5); W_ = r.w; H_ = r.h; last = 0; L.start(); }, stop() { L.stop(); playing = false; } };
+};
+
+/* 3b. Q calculator */
+W.qcalc = box => {
+  head(box, 'מחשבון', 'מ-ΔH לכמות אנרגיה בפועל (Q)', true);
+  box.insertAdjacentHTML('beforeend', `<div class="eq">2H<sub>2</sub>(g) + O<sub>2</sub>(g) → 2H<sub>2</sub>O(l) &nbsp; ΔH° = −572 kJ</div>
+  <div class="controls"><label for="qn">מול H<sub>2</sub> שנשרפו <input id="qn" type="number" min="0" step="0.5" value="3"></label>
+  <label for="qdir">כיוון <select id="qdir"><option value="f">שריפת מימן (כמו בניסוח)</option><option value="r">פירוק מים (תגובה הפוכה)</option></select></label></div>
+  <div class="caption" id="qout"></div>`);
+  const upd = () => { const n = parseFloat($('#qn', box).value) || 0; const rev = $('#qdir', box).value === 'r'; const ratio = n / 2; const Q = 572 * ratio;
+    $('#qout', box).innerHTML = `יחס לניסוח: ${n} ÷ 2 = <b>${+ratio.toFixed(3)}</b>. ` + (rev ? `התגובה ההפוכה אנדותרמית (ΔH° = +572 kJ), ולכן <b class="pos">נקלטים ${+Q.toFixed(1)} kJ</b> בפירוק ${n} מול מים.` : `<b class="neg">משתחררים ${+Q.toFixed(1)} kJ</b> לסביבה.`); };
+  box.addEventListener('input', upd); upd();
+  return {};
+};
+
+/* 4. heating curve */
+W.heating = box => {
+  head(box, 'סרטון אנימציה', 'עקומת חימום של מים');
+  const wrap = el('div', { class: 'split' }); const c1 = el('div', { style: 'min-width:0' }), c2 = el('div', { style: 'min-width:0' });
+  const cv = el('canvas'), pv = el('canvas'); c1.appendChild(cv); c2.appendChild(pv); wrap.append(c1, c2); box.appendChild(wrap);
+  wrap.style.gridTemplateColumns = 'minmax(0,2fr) minmax(0,1fr)';
+  const cap = el('p', { class: 'caption', 'aria-live': 'polite' }); box.appendChild(cap);
+  const ctr = el('div', { class: 'controls' }, `<button class="btn" data-a="play">הפעלה ▶</button><button class="btn ghost" data-a="reset">התחלה מחדש</button>`); box.appendChild(ctr);
+  // segments: [duration, T0, T1, state, caption]
+  const seg = [[1.0, -20, 0, 's', 'חימום הקרח: האנרגיה מגבירה את תנודות המולקולות. האנרגיה הקינטית הממוצעת והטמפרטורה עולות.'],
+  [1.2, 0, 0, 'm', 'התכה ב-0°C: הטמפרטורה קבועה. האנרגיה משמשת להתגברות על חלק מכוחות המשיכה (ΔH התכה = +6.0 kJ/mol).'],
+  [2.0, 0, 100, 'l', 'חימום המים הנוזליים: המולקולות נעות מהר יותר, הטמפרטורה עולה.'],
+  [3.6, 100, 100, 'b', 'רתיחה ב-100°C: קטע ארוך! המולקולות מתרחקות מאוד (ΔH אידוי = +40.7 kJ/mol). לכן הקטע ארוך בהרבה מקטע ההתכה.'],
+  [1.0, 100, 120, 'g', 'חימום האדים: הגז מתחמם והמולקולות נעות מהר עוד יותר.']];
+  const tot = seg.reduce((a, s) => a + s[0], 0);
+  let tt = 0, playing = false, last = 0, W1, H1, W2, H2, mols = [];
+  const stateAt = t => { let acc = 0; for (let i = 0; i < seg.length; i++) { const s = seg[i]; if (t <= acc + s[0] || i === seg.length - 1) { const f = Math.min(1, (t - acc) / s[0]); return { i, f, T: s[1] + (s[2] - s[1]) * f, st: s[3] }; } acc += s[0]; } };
+  const initM = () => { mols = []; const n = 20, cols = 5; for (let k = 0; k < n; k++) { const gx = (k % cols + .5) / cols, gy = (Math.floor(k / cols) + .5) / (n / cols); mols.push({ gx, gy, x: gx, y: gy, vx: (Math.random() - .5), vy: (Math.random() - .5) }); } };
+  const draw = () => {
+    const c = colors(); const S = stateAt(tt);
+    let ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W1, H1);
+    const L = 44, R = W1 - 14, T = 16, B = H1 - 30; const X = t => L + t / tot * (R - L), Y = v => B - (v + 30) / 160 * (B - T);
+    arrow(ctx, L, B, L, T - 4, c.muted, 1.5); arrow(ctx, L, B, R + 4, B, c.muted, 1.5);
+    [-20, 0, 100, 120].forEach(v => { txt(ctx, v + '°', L - 18, Y(v), c.muted, 11); ctx.strokeStyle = c.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(R, Y(v)); ctx.stroke(); });
+    txt(ctx, 'זמן חימום', (L + R) / 2, H1 - 10, c.muted, 12);
+    ctx.strokeStyle = c.line; ctx.lineWidth = 2.5; ctx.beginPath(); let acc = 0; seg.forEach((s, i) => { if (!i) ctx.moveTo(X(0), Y(s[1])); ctx.lineTo(X(acc + s[0]), Y(s[2])); acc += s[0]; }); ctx.stroke();
+    ctx.strokeStyle = c.heat; ctx.lineWidth = 3.5; ctx.beginPath(); acc = 0; ctx.moveTo(X(0), Y(-20));
+    for (let i = 0; i < seg.length; i++) { const s = seg[i]; if (i < S.i) ctx.lineTo(X(acc + s[0]), Y(s[2])); else { ctx.lineTo(X(acc + s[0] * S.f), Y(S.T)); break; } acc += s[0]; } ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(tt), Y(S.T), 6, 0, 6.283); ctx.fillStyle = c.heat; ctx.fill();
+    // particle box
+    ctx = pv.getContext('2d'); ctx.clearRect(0, 0, W2, H2);
+    const melt = S.st === 'm' ? S.f : (['l', 'b', 'g'].includes(S.st) ? 1 : 0), boil = S.st === 'b' ? S.f : (S.st === 'g' ? 1 : 0);
+    const speed = .002 + (S.T + 30) / 150 * .01;
+    mols.forEach((m, k) => {
+      const isGas = k / mols.length < boil;
+      if (melt === 0) { m.x = m.gx + Math.sin(tt * 40 + k) * .012 * (1 + (S.T + 20) / 20); m.y = m.gy + Math.cos(tt * 37 + k) * .012 * (1 + (S.T + 20) / 20); }
+      else { m.x += m.vx * speed * (isGas ? 2.4 : 1); m.y += m.vy * speed * (isGas ? 2.4 : 1);
+        const top = isGas ? 0 : .45 - .0; if (m.x < .04 || m.x > .96) m.vx *= -1; if (m.y > .96) m.vy = -Math.abs(m.vy); if (m.y < (isGas ? .04 : .5)) m.vy = Math.abs(m.vy); m.x = Math.min(.96, Math.max(.04, m.x)); m.y = Math.min(.96, Math.max(isGas ? .04 : .48, m.y));
+        if (melt < 1 && !isGas) { m.x = m.x * melt + (m.gx) * (1 - melt); m.y = m.y * melt + (m.gy) * (1 - melt); } }
+      ctx.beginPath(); ctx.arc(m.x * W2, m.y * H2, 7, 0, 6.283); ctx.fillStyle = isGas ? c.heat : c.cold; ctx.fill();
+    });
+    const lbl = S.st === 's' ? 'מוצק' : S.st === 'm' ? 'מוצק + נוזל' : S.st === 'l' ? 'נוזל' : S.st === 'b' ? 'נוזל + גז' : 'גז';
+    txt(ctx, lbl + '  ·  ' + Math.round(S.T) + '°C', W2 / 2, 14, c.ink, 13, 'center', true);
+    cap.textContent = seg[S.i][4];
+  };
+  const L = loop(ts => { const dt = Math.min(50, ts - (last || ts)); last = ts; if (playing) { tt += dt / 1000 * .55; if (tt >= tot) { tt = tot; playing = false; $('[data-a=play]', ctr).textContent = 'הפעלה ▶'; } } draw(); });
+  ctr.addEventListener('click', e => { const a = e.target.dataset.a; if (a === 'play') { if (tt >= tot) { tt = 0; initM(); } playing = !playing; e.target.textContent = playing ? 'השהיה ❚❚' : 'המשך ▶'; } if (a === 'reset') { tt = 0; initM(); playing = false; $('[data-a=play]', ctr).textContent = 'הפעלה ▶'; } });
+  initM();
+  return { start() { let r = fitCanvas(cv, .56); W1 = r.w; H1 = r.h; r = fitCanvas(pv, 1.0); W2 = r.w; H2 = r.h; if (H2 > H1) { r = fitCanvas(pv, H1 / W2); W2 = r.w; H2 = r.h; } last = 0; L.start(); }, stop() { L.stop(); playing = false; } };
+};
+
+/* 5. Hess builder */
+W.hess = box => {
+  head(box, 'מעבדה אינטראקטיבית', 'בנו בעצמכם את מסלול חוק הס', true);
+  box.insertAdjacentHTML('beforeend', `<p>מטרה: <span class="f">C(s) + ½O₂(g) → CO(g)</span>. הפכו ו/או הכפילו כל ניסוח, עד שהסכום נותן את תגובת המטרה.</p><div id="hrows" style="display:flex;flex-direction:column;gap:8px"></div><div class="caption" id="hsum"></div><div id="hver"></div>`);
+  const eqs = [{ r: { 'C(s)': 1, 'O₂(g)': 1 }, p: { 'CO₂(g)': 1 }, dh: -393.5 }, { r: { 'CO(g)': 1, 'O₂(g)': .5 }, p: { 'CO₂(g)': 1 }, dh: -283.0 }];
+  const st = eqs.map(() => ({ dir: 1, m: 1 }));
+  const frac = v => v === .5 ? '½' : v === .25 ? '¼' : v === 1.5 ? '1½' : v === 1 ? '' : String(v);
+  const side = o => Object.entries(o).map(([k, v]) => frac(v) + k).join(' + ');
+  const rows = $('#hrows', box);
+  const render = () => {
+    rows.innerHTML = ''; const net = {};
+    let sum = 0;
+    eqs.forEach((e, i) => { const s = st[i]; const R = s.dir > 0 ? e.r : e.p, P = s.dir > 0 ? e.p : e.r; const sc = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * s.m]));
+      const r2 = sc(R), p2 = sc(P); const dh = e.dh * s.dir * s.m; sum += dh;
+      for (const k in r2) net[k] = (net[k] || 0) - r2[k]; for (const k in p2) net[k] = (net[k] || 0) + p2[k];
+      const row = el('div', { class: 'hessrow' });
+      row.innerHTML = `<button class="btn ghost" data-i="${i}" data-a="flip">הפיכה ⇄</button><label for="hm${i}">כפול <select id="hm${i}" data-i="${i}">${[.5, 1, 2].map(v => `<option value="${v}" ${v === s.m ? 'selected' : ''}>${v}</option>`).join('')}</select></label><div class="eq">(${i + 1}) ${side(r2)} → ${side(p2)} &nbsp; ΔH = ${fmt(dh)} kJ</div>`;
+      rows.appendChild(row); });
+    const re = [], pr = []; for (const k in net) { const v = Math.round(net[k] * 100) / 100; if (v < 0) re.push(frac(-v) + k); if (v > 0) pr.push(frac(v) + k); }
+    $('#hsum', box).innerHTML = `סכום: <span class="f">${re.join(' + ') || '—'} → ${pr.join(' + ') || '—'}</span> &nbsp; ΔH = <b class="f">${fmt(sum)} kJ</b>`;
+    const ok = st[0].dir === 1 && st[0].m === 1 && st[1].dir === -1 && st[1].m === 1;
+    $('#hver', box).innerHTML = ok ? '<div class="verdict ok">מצוין! CO₂ מתבטל, ומתקבלת תגובת המטרה עם ΔH = −110.5 kJ.</div>' : '<div class="verdict no">עוד לא. רמז: איפה צריך להיות CO, בצד המגיבים או בצד התוצרים?</div>';
+  };
+  rows.addEventListener('click', e => { if (e.target.dataset.a === 'flip') { st[+e.target.dataset.i].dir *= -1; render(); } });
+  rows.addEventListener('change', e => { if (e.target.tagName === 'SELECT') { st[+e.target.dataset.i].m = +e.target.value; render(); } });
+  render(); return {};
+};
+
+/* 6. bonds animation */
+W.bondsAnim = box => {
+  head(box, 'סרטון אנימציה', 'H₂ + Cl₂ → 2HCl: שבירה ויצירה');
+  const cv = el('canvas'); box.appendChild(cv);
+  const cap = el('p', { class: 'caption', 'aria-live': 'polite' }); box.appendChild(cap);
+  const ctr = el('div', { class: 'controls' }, `<button class="btn" data-a="play">הפעלה ▶</button><button class="btn ghost" data-a="reset">התחלה מחדש</button>`); box.appendChild(ctr);
+  const caps = ['מולקולת H₂ ומולקולת Cl₂. כל מולקולה מוחזקת בקשר קוולנטי.', 'שלב 1: שבירת הקשרים. משקיעים 436 kJ (H–H) + 243 kJ (Cl–Cl) = 679 kJ. שלב אנדותרמי.', 'שלב 2: יצירת שני קשרי H–Cl. משתחררים 2 × 432 = 864 kJ. שלב אקסותרמי.', 'סיכום: ΔH = 679 − 864 = −185 kJ. השתחרר יותר ממה שהושקע, ולכן התגובה אקסותרמית.'];
+  let t = 0, playing = false, last = 0, W_, H_;
+  const draw = () => {
+    const c = colors(), ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W_, H_);
+    const ph = Math.min(3, Math.floor(t)), f = t - Math.floor(t);
+    cap.textContent = caps[ph];
+    const ax = W_ * .62, cy = H_ * .5, sc = Math.min(W_, 520) / 520;
+    const r1 = 16 * sc, r2 = 24 * sc;
+    // positions
+    let H1, H2, C1, C2;
+    const sep = ph === 0 ? 0 : ph === 1 ? f : 1, join = ph < 2 ? 0 : ph === 2 ? f : 1;
+    const base = { H1: [-40, -40], H2: [0, -40], C1: [-46, 40], C2: [6, 40] };
+    const apart = { H1: [-110, -60], H2: [70, -60], C1: [-120, 60], C2: [80, 60] };
+    const fin = { H1: [-110, -20], C1: [-110 + 52, -20], H2: [10, 20], C2: [10 + 52, 20] };
+    const pos = k => { const a = base[k], b = apart[k], d = fin[k]; const x1 = a[0] + (b[0] - a[0]) * sep, y1 = a[1] + (b[1] - a[1]) * sep; return [ax + (x1 + (d[0] - x1) * join) * sc * 1.2, cy + (y1 + (d[1] - y1) * join) * sc * 1.1]; };
+    H1 = pos('H1'); H2 = pos('H2'); C1 = pos('C1'); C2 = pos('C2');
+    const bond = (a, b, col, alpha) => { ctx.globalAlpha = alpha; ctx.strokeStyle = col; ctx.lineWidth = 6 * sc; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.globalAlpha = 1; };
+    if (sep < 1) { bond(H1, H2, c.ink, 1 - sep); bond(C1, C2, c.ink, 1 - sep); }
+    if (join > 0) { bond(H1, C1, c.good, join); bond(H2, C2, c.good, join); }
+    const atom = (p, r, col, s) => { ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.283); ctx.fillStyle = col; ctx.fill(); txt(ctx, s, p[0], p[1] + 1, c.surface, 13 * sc + 2, 'center', true); };
+    atom(H1, r1, c.cold, 'H'); atom(H2, r1, c.cold, 'H'); atom(C1, r2, c.good, 'Cl'); atom(C2, r2, c.good, 'Cl');
+    // energy arrows
+    if (ph === 1) for (let k = 0; k < 3; k++) { const x = ax + (-150 + k * 110) * sc; const y0 = H_ * .08 + ((f * 60 + k * 20) % 40); ctx.globalAlpha = .8; arrow(ctx, x, y0, x, y0 + 24, c.cold, 3); ctx.globalAlpha = 1; }
+    if (ph === 2) for (let k = 0; k < 3; k++) { const x = ax + (-150 + k * 110) * sc; const y0 = H_ * .92 - ((f * 60 + k * 20) % 40); ctx.globalAlpha = .8; arrow(ctx, x, y0, x, y0 + 24, c.heat, 3); ctx.globalAlpha = 1; }
+    // ledger bars (left side)
+    const lx = 18, lw = W_ * .26, maxE = 900, bh = 18;
+    const val1 = ph >= 1 ? 679 * (ph === 1 ? f : 1) : 0, val2 = ph >= 2 ? 864 * (ph === 2 ? f : 1) : 0;
+    txt(ctx, 'מושקע בשבירה', lx + lw, H_ * .2, c.ink, 12, 'right', true);
+    ctx.fillStyle = c.line; ctx.fillRect(lx, H_ * .2 + 10, lw, bh); ctx.fillStyle = c.cold; ctx.fillRect(lx, H_ * .2 + 10, lw * val1 / maxE, bh); txt(ctx, Math.round(val1) + ' kJ', lx + 4, H_ * .2 + 10 + bh / 2, c.ink, 12, 'left', true);
+    txt(ctx, 'משתחרר ביצירה', lx + lw, H_ * .5, c.ink, 12, 'right', true);
+    ctx.fillStyle = c.line; ctx.fillRect(lx, H_ * .5 + 10, lw, bh); ctx.fillStyle = c.heat; ctx.fillRect(lx, H_ * .5 + 10, lw * val2 / maxE, bh); txt(ctx, Math.round(val2) + ' kJ', lx + 4, H_ * .5 + 10 + bh / 2, c.ink, 12, 'left', true);
+    if (ph === 3) txt(ctx, 'ΔH = −185 kJ', lx + lw / 2, H_ * .82, c.heat, 16, 'center', true);
+  };
+  const L = loop(ts => { const dt = Math.min(50, ts - (last || ts)); last = ts; if (playing) { t += dt / 2600; if (t >= 3) { t = 3; playing = false; $('[data-a=play]', ctr).textContent = 'הפעלה ▶'; } } draw(); });
+  ctr.addEventListener('click', e => { const a = e.target.dataset.a; if (a === 'play') { if (t >= 3) t = 0; playing = !playing; e.target.textContent = playing ? 'השהיה ❚❚' : 'המשך ▶'; } if (a === 'reset') { t = 0; playing = false; $('[data-a=play]', ctr).textContent = 'הפעלה ▶'; } });
+  return { start() { const r = fitCanvas(cv, .5); W_ = r.w; H_ = r.h; last = 0; L.start(); }, stop() { L.stop(); playing = false; } };
+};
+
+/* 6b. bond calculator */
+W.bondcalc = box => {
+  head(box, 'מחשבון', 'חישוב ΔH מאנתלפיות קשר, שלב אחר שלב', true);
+  const R = {
+    hcl: { eq: 'H₂(g) + Cl₂(g) → 2HCl(g)', br: [['H–H', 1, 436], ['Cl–Cl', 1, 243]], fo: [['H–Cl', 2, 432]] },
+    hbr: { eq: 'H₂(g) + Br₂(g) → 2HBr(g)', br: [['H–H', 1, 436], ['Br–Br', 1, 193]], fo: [['H–Br', 2, 366]] },
+    h2o: { eq: '2H₂(g) + O₂(g) → 2H₂O(g)', br: [['H–H', 2, 436], ['O=O', 1, 498]], fo: [['O–H', 4, 463]] },
+    nh3: { eq: 'N₂(g) + 3H₂(g) → 2NH₃(g)', br: [['N≡N', 1, 945], ['H–H', 3, 436]], fo: [['N–H', 6, 391]] },
+    ch4: { eq: 'CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(g)', br: [['C–H', 4, 413], ['O=O', 2, 498]], fo: [['C=O', 2, 799], ['O–H', 4, 463]] }
+  };
+  box.insertAdjacentHTML('beforeend', `<div class="controls"><label for="bsel">תגובה <select id="bsel">${Object.entries(R).map(([k, v]) => `<option value="${k}">${v.eq}</option>`).join('')}</select></label><button class="btn ghost" id="breveal">הצגת הפתרון</button></div><p>נסו לחשב לבד במחברת, ואז לחצו על "הצגת הפתרון".</p><div id="bout" hidden></div>`);
+  const out = $('#bout', box);
+  const upd = () => { const r = R[$('#bsel', box).value]; const sb = r.br.reduce((a, x) => a + x[1] * x[2], 0), sf = r.fo.reduce((a, x) => a + x[1] * x[2], 0); const dh = sb - sf;
+    const tbl = (arr) => arr.map(x => `<tr><td class="num">${x[0]}</td><td class="num">${x[1]}</td><td class="num">${x[2]}</td><td class="num">${x[1] * x[2]}</td></tr>`).join('');
+    out.innerHTML = `<div class="tblwrap"><table><thead><tr><th>קשר</th><th>מספר קשרים</th><th>kJ/mol</th><th>סה"כ kJ</th></tr></thead><tbody><tr><th colspan="4">נשברים (במגיבים)</th></tr>${tbl(r.br)}<tr><th colspan="4">נוצרים (בתוצרים)</th></tr>${tbl(r.fo)}</tbody></table></div>
+    <p class="caption">ΔH = ${sb} − ${sf} = <b class="${dh < 0 ? 'neg' : 'pos'}">${dh > 0 ? '+' : ''}${dh} kJ</b> (${dh < 0 ? 'אקסותרמית' : 'אנדותרמית'})${$('#bsel', box).value === 'ch4' ? '. כאן C=O = 799 kJ/mol (הערך ב-CO₂).' : ''}</p>`; };
+  $('#bsel', box).addEventListener('change', () => { out.hidden = true; });
+  $('#breveal', box).addEventListener('click', () => { upd(); out.hidden = false; });
+  return {};
+};
+
+/* 7. collisions simulation + energy distribution */
+W.collisions = box => {
+  head(box, 'הדמיה', 'מודל ההתנגשויות במעבדה וירטואלית', true);
+  const cv = el('canvas'); box.appendChild(cv);
+  const ctr = el('div', { class: 'controls' }, `<label for="cT">טמפרטורה <input id="cT" type="range" min="200" max="600" value="300"></label><label for="cN">ריכוז <input id="cN" type="range" min="6" max="40" value="16"></label><label for="cK"><input id="cK" type="checkbox"> זרז</label><button class="btn ghost" data-a="reset">איפוס</button>`);
+  box.appendChild(ctr);
+  const ro = el('div', { class: 'readout' }); box.appendChild(ro);
+  const dv = el('canvas'); box.appendChild(dv);
+  box.appendChild(el('p', { class: 'caption' }, 'כחול + כתום = מגיבים. ירוק = תוצר. רק התנגשות עם אנרגיה ≥ Ea מבזיקה ויוצרת תוצר. בגרף התחתון: השטח הצבוע מימין לקו Ea הוא חלק החלקיקים שיש להם מספיק אנרגיה. נסו להעלות טמפרטורה או להוסיף זרז.'));
+  let W_, H_, W2, H2, ps = [], flashes = [], made = 0, t0 = 0, hist = [];
+  const T = () => +$('#cT', box).value, N = () => +$('#cN', box).value, Ea = () => ($('#cK', box).checked ? 3.2 : 6.0);
+  const reset = () => { ps = []; made = 0; flashes = []; t0 = performance.now(); hist = []; const n = N(); for (let i = 0; i < n * 2; i++) { const s = Math.sqrt(T() / 300) * (0.5 + Math.random()) * 1.6, a = Math.random() * 6.283; ps.push({ x: 12 + Math.random() * (W_ - 24), y: 12 + Math.random() * (H_ - 24), vx: s * Math.cos(a), vy: s * Math.sin(a), k: i % 2 }); } };
+  let lastT = 300;
+  ['cT', 'cN'].forEach(id => $('#' + id, box).addEventListener('input', () => { if (id === 'cT') { const f = Math.sqrt(T() / lastT); ps.forEach(p => { p.vx *= f; p.vy *= f; }); lastT = T(); } else reset(); }));
+  ctr.addEventListener('click', e => { if (e.target.dataset.a === 'reset') reset(); });
+  const drawDist = () => {
+    const c = colors(), ctx = dv.getContext('2d'); ctx.clearRect(0, 0, W2, H2);
+    const L = 36, R = W2 - 12, Tp = 12, B = H2 - 24; const Emax = 14; const kT = T() / 300 * 1.6;
+    const f = E => Math.sqrt(E) * Math.exp(-E / kT) / Math.pow(kT, 1.5);
+    let mx = 0; for (let i = 1; i <= 200; i++) mx = Math.max(mx, f(i / 200 * Emax));
+    const mxRef = (() => { let m = 0; const k = 200 / 300 * 1.6; for (let i = 1; i <= 200; i++) { const E = i / 200 * Emax; m = Math.max(m, Math.sqrt(E) * Math.exp(-E / k) / Math.pow(k, 1.5)); } return m; })();
+    const X = E => L + E / Emax * (R - L), Y = v => B - v / mxRef * (B - Tp) * .95;
+    arrow(ctx, L, B, L, Tp - 2, c.muted, 1.5); arrow(ctx, L, B, R + 4, B, c.muted, 1.5);
+    txt(ctx, 'אנרגיה קינטית', (L + R) / 2, H2 - 8, c.muted, 11);
+    ctx.save(); ctx.translate(12, (Tp + B) / 2); ctx.rotate(-Math.PI / 2); txt(ctx, 'מספר חלקיקים', 0, 0, c.muted, 11); ctx.restore();
+    const ea = Ea() * 1.0;
+    ctx.beginPath(); ctx.moveTo(X(ea), B); for (let i = 0; i <= 200; i++) { const E = ea + i / 200 * (Emax - ea); ctx.lineTo(X(E), Y(f(E))); } ctx.lineTo(X(Emax), B); ctx.closePath(); ctx.fillStyle = c.heat; ctx.globalAlpha = .35; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.beginPath(); for (let i = 0; i <= 200; i++) { const E = i / 200 * Emax; i ? ctx.lineTo(X(E), Y(f(E))) : ctx.moveTo(X(E), Y(f(E))); } ctx.strokeStyle = c.ink; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = $('#cK', box).checked ? c.good : c.cold; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(ea), Tp); ctx.lineTo(X(ea), B); ctx.stroke(); ctx.setLineDash([]);
+    txt(ctx, 'Ea', X(ea) + 14, Tp + 8, $('#cK', box).checked ? c.good : c.cold, 13, 'center', true);
+    let num = 0, den = 0; for (let i = 1; i <= 400; i++) { const E = i / 400 * 30; const v = f(E); den += v; if (E >= ea) num += v; }
+    return num / den;
+  };
+  const L = loop(now => {
+    const c = colors(), ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W_, H_);
+    const ea = Ea(), r = 7;
+    for (const p of ps) { p.x += p.vx; p.y += p.vy; if (p.x < r || p.x > W_ - r) p.vx *= -1; if (p.y < r || p.y > H_ - r) p.vy *= -1; p.x = Math.min(Math.max(p.x, r), W_ - r); p.y = Math.min(Math.max(p.y, r), H_ - r); }
+    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) {
+      const a = ps[i], b = ps[j]; const dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy; if (d2 > 4 * r * r || d2 === 0) continue;
+      const d = Math.sqrt(d2), nx = dx / d, ny = dy / d; const rel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny; if (rel <= 0) continue;
+      const E = rel * rel * 1.0;
+      if (a.k !== b.k && a.k < 2 && b.k < 2 && E >= ea) { a.k = 2; b.k = 2; made++; flashes.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, t: 0 }); }
+      a.vx -= rel * nx; a.vy -= rel * ny; b.vx += rel * nx; b.vy += rel * ny;
+    }
+    // thermostat: keep avg speed matched to T
+    let s2 = 0; ps.forEach(p => s2 += p.vx * p.vx + p.vy * p.vy); const target = Math.pow(Math.sqrt(T() / 300) * 1.6, 2) * 1.08; const k = Math.sqrt(target / (s2 / ps.length || 1)); if (isFinite(k)) ps.forEach(p => { p.vx *= (1 + (k - 1) * .05); p.vy *= (1 + (k - 1) * .05); });
+    for (const p of ps) { ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fillStyle = p.k === 0 ? c.cold : p.k === 1 ? c.heat : c.good; ctx.fill(); }
+    flashes = flashes.filter(f => f.t < 1); flashes.forEach(f => { f.t += .05; ctx.beginPath(); ctx.arc(f.x, f.y, 8 + f.t * 22, 0, 6.283); ctx.strokeStyle = c.good; ctx.globalAlpha = 1 - f.t; ctx.lineWidth = 3; ctx.stroke(); ctx.globalAlpha = 1; });
+    const frac = drawDist();
+    const secs = (performance.now() - t0) / 1000;
+    const left = ps.filter(p => p.k < 2).length / 2;
+    ro.innerHTML = `<span>T = <b>${T()}</b> K</span><span>חלקיקים עם E ≥ Ea: <b>${(frac * 100).toFixed(1)}%</b></span><span>תוצרים שנוצרו: <b>${made}</b></span><span>זוגות מגיבים שנותרו: <b>${left}</b></span><span>זמן: <b>${secs.toFixed(0)}</b> שנ'</span>`;
+  });
+  return { start() { let r = fitCanvas(cv, .45); W_ = r.w; H_ = r.h; r = fitCanvas(dv, .3); W2 = r.w; H2 = r.h; lastT = T(); reset(); L.start(); }, stop() { L.stop(); } };
+};
+
+/* 8. entropy spread */
+W.spread = box => {
+  head(box, 'הדמיה', 'למה גז מתפשט מעצמו?', true);
+  const cv = el('canvas'); box.appendChild(cv);
+  const ctr = el('div', { class: 'controls' }, `<button class="btn" data-a="open">הסרת המחיצה</button><button class="btn ghost" data-a="reset">איפוס</button>`); box.appendChild(ctr);
+  const ro = el('div', { class: 'readout' }); box.appendChild(ro);
+  box.appendChild(el('p', { class: 'caption' }, 'אחרי הסרת המחיצה יש הרבה יותר דרכים לסדר את החלקיקים בשני חצאי הכלי. הסיכוי שכל החלקיקים יחזרו מעצמם לחצי אחד הוא ½ בחזקת מספר החלקיקים, כלומר כמעט אפס. זה הכיוון הטבעי: לעבר יותר פיזור, אנטרופיה גבוהה יותר.'));
+  let W_, H_, ps = [], open = false; const n = 24;
+  const reset = () => { open = false; ps = Array.from({ length: n }, () => { const a = Math.random() * 6.283, s = 1.4 + Math.random(); return { x: W_ * .52 + Math.random() * (W_ * .44), y: 10 + Math.random() * (H_ - 20), vx: s * Math.cos(a), vy: s * Math.sin(a) }; }); };
+  ctr.addEventListener('click', e => { if (e.target.dataset.a === 'open') open = true; if (e.target.dataset.a === 'reset') reset(); });
+  const L = loop(() => {
+    const c = colors(), ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W_, H_); const mid = W_ / 2, r = 6;
+    for (const p of ps) { p.x += p.vx; p.y += p.vy; const minX = open ? r : mid + 4 + r;
+      if (p.x < minX) { p.x = minX; p.vx = Math.abs(p.vx); } if (p.x > W_ - r) { p.x = W_ - r; p.vx = -Math.abs(p.vx); } if (p.y < r || p.y > H_ - r) { p.vy *= -1; p.y = Math.min(Math.max(p.y, r), H_ - r); }
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fillStyle = c.cold; ctx.fill(); }
+    if (!open) { ctx.fillStyle = c.ink; ctx.fillRect(mid - 2, 0, 4, H_); txt(ctx, 'ריק (ואקום)', mid / 2, H_ / 2, c.muted, 14, 'center', true); }
+    const leftN = ps.filter(p => p.x < mid).length;
+    ro.innerHTML = `<span>חצי שמאלי: <b>${leftN}</b></span><span>חצי ימני: <b>${n - leftN}</b></span><span>סיכוי שכולם יחזרו לימין: <b>1 ל-${Math.pow(2, n).toLocaleString('en-US')}</b></span>`;
+  });
+  return { start() { const r = fitCanvas(cv, .4); W_ = r.w; H_ = r.h; reset(); L.start(); }, stop() { L.stop(); } };
+};
+
+/* 8b. entropy calculator */
+W.entcalc = box => {
+  head(box, 'מחשבון', 'האם התגובה ספונטנית?', true);
+  box.insertAdjacentHTML('beforeend', `<div class="controls"><label for="eH">ΔH° (kJ) <input id="eH" type="number" step="any" value="-92"></label><label for="eS">ΔS°<sub>sys</sub> (J/K) <input id="eS" type="number" step="any" value="-199"></label><label for="eT">T (K) <input id="eT" type="number" step="any" min="1" value="298"></label></div><div class="caption" id="eout"></div>`);
+  const upd = () => { const H = parseFloat($('#eH', box).value), S = parseFloat($('#eS', box).value), T = parseFloat($('#eT', box).value); if ([H, S, T].some(isNaN) || T <= 0) { $('#eout', box).textContent = 'מלאו שלושה מספרים. הטמפרטורה בקלווין חייבת להיות חיובית.'; return; }
+    const Ss = -H * 1000 / T, U = S + Ss;
+    $('#eout', box).innerHTML = `ΔS°<sub>surr</sub> = −(${H} × 1000) ÷ ${T} = <b>${fmt(Ss)} J/K</b><br>ΔS°<sub>univ</sub> = ${S} + (${fmt(Ss)}) = <b class="${U > 0 ? 'pos' : 'neg'}">${fmt(U)} J/K</b><br>${U > 0 ? 'ΔS<sub>univ</sub> > 0, ולכן התהליך ספונטני בטמפרטורה זו.' : U < 0 ? 'ΔS<sub>univ</sub> < 0, ולכן התהליך אינו ספונטני בטמפרטורה זו (התהליך ההפוך ספונטני).' : 'ΔS<sub>univ</sub> = 0.'}`; };
+  box.addEventListener('input', upd); upd(); return {};
+};
+/* ================= state ================= */
+const KEY = 'energy-chem-v1';
+let S = { name: '', startMood: null, ch: {} };
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const chs = id => (S.ch[id] = S.ch[id] || { best: null, last: null, conf: null, mood: null, hard: [], note: '', tries: 0 });
+
+const PRAISE = ['מצוין!', 'נכון מאוד!', 'יפה! חשיבה כימית נכונה.', 'בדיוק כך!', 'כל הכבוד!', 'תשובה מדויקת!'];
+const ENCOURAGE = ['לא נורא, זו הזדמנות ללמוד.', 'כמעט. בואו נבין יחד.', 'טעות היא חלק מהלמידה.', 'שווה לעצור על זה רגע.'];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const MOODS = [['😟', 'מתוסכל/ת'], ['🙁', 'מבולבל/ת'], ['😐', 'בסדר'], ['🙂', 'טוב'], ['😄', 'מעולה']];
+const HARD = ['המושגים', 'החישובים', 'הגרפים', 'ההדמיות', 'השאלות בבוחן', 'הכל היה ברור'];
+const hi = () => S.name ? S.name + ', ' : '';
+
+/* ================= nav ================= */
+const nav = $('#nav'), view = $('#view');
+let active = [];
+function buildNav() {
+  nav.querySelectorAll('.navbtn').forEach(b => b.remove());
+  const items = [['home', 'פתיחה', '0']].concat(CHAPTERS.map((c, i) => [c.id, c.title, String(i + 1)])).concat([['report', 'הדוח שלי למורה', '✓']]);
+  items.forEach(([id, t, n]) => { const b = el('button', { class: 'navbtn', 'data-go': id }); const st = S.ch[id] && S.ch[id].best != null ? `<span class="st ${S.ch[id].best >= 8 ? 'ok' : ''}">${S.ch[id].best}/10</span>` : ''; b.innerHTML = `<span class="tick">${n}</span><span>${t}</span>${st}`; nav.appendChild(b); });
+  const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
+  $('#mercury').style.height = (done / CHAPTERS.length * 100) + '%';
+}
+nav.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+view.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+function go(id, noScroll) {
+  active.forEach(w => w.stop && w.stop()); active = [];
+  view.innerHTML = '';
+  if (id === 'home') renderHome(); else if (id === 'report') renderReport(); else renderChapter(CHAPTERS.find(c => c.id === id) || CHAPTERS[0]);
+  nav.querySelectorAll('.navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'));
+  try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  if (!noScroll) window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
+}
+
+/* ================= home ================= */
+function renderHome() {
+  const v = el('div', { class: 'view' });
+  v.innerHTML = `<p class="eyebrow">כימיה 5 יח"ל · פרק אנרגיה ודינמיקה</p>
+  <h1>אנרגיה בקצב הכימיה</h1>
+  <div class="thermobar" aria-hidden="true"></div>
+  <p class="lead">ברוכים הבאים! לפניכם מערכת לימודית על אנרגיה בתהליכים כימיים: מהתנועה של חלקיק בודד, דרך ΔH וחוק הס, ועד השאלה למה תגובות קורות בכלל. בכל פרק יש הסברים, הדמיות שאפשר לשחק בהן, סרטוני אנימציה, ובסוף בוחן של 10 שאלות.</p>
+  <section class="panel"><h2>לפני שמתחילים</h2>
+  <label for="sname" style="font-weight:700">איך קוראים לכם? <input id="sname" type="text" autocomplete="given-name" value="${(S.name || '').replace(/"/g, '&quot;')}" placeholder="שם פרטי"></label>
+  <p style="font-weight:700">איך אתם מרגישים לקראת הנושא?</p><div class="moods" id="smood"></div><div id="smreply"></div></section>
+  <section class="blk"><h2>איך עובדים כאן</h2>
+  <ol><li>קוראים את ההסבר ומפעילים את ההדמיות. אל תדלגו עליהן; הן חלק מההסבר.</li>
+  <li>לפני הבוחן מסמנים כמה אתם בטוחים בעצמכם.</li>
+  <li>עונים על 10 שאלות. אחרי כל תשובה מופיע הסבר, גם כשצדקתם.</li>
+  <li>מספרים לי איך הרגשתם ומה היה קשה. אני קורא כל משוב.</li>
+  <li>בסוף שולחים לי את "הדוח שלי למורה".</li></ol></section>
+  <section class="blk"><h2>הפרקים</h2><div class="homegrid" id="hg"></div></section>`;
+  view.appendChild(v);
+  const hg = $('#hg', v);
+  CHAPTERS.forEach((c, i) => { const b = el('button', { class: 'homecard', 'data-go': c.id }); const r = S.ch[c.id] && S.ch[c.id].best != null ? ` · בוחן: ${S.ch[c.id].best}/10` : ''; b.innerHTML = `<span class="n">פרק ${i + 1}</span><b>${c.title}</b><small>${c.short}${r}</small>`; hg.appendChild(b); });
+  $('#sname', v).addEventListener('input', e => { S.name = e.target.value.trim(); save(); });
+  moodPicker($('#smood', v), S.startMood, m => { S.startMood = m; save(); $('#smreply', v).innerHTML = teacher(m <= 1 ? `${hi()}תודה על הכנות. אנרגיה נשמעת לפעמים מופשטת, ולכן בניתי כאן הרבה הדמיות. נתקדם צעד אחר צעד, ואפשר לחזור על כל פרק כמה שרוצים.` : m === 2 ? `${hi()}נשמע הוגן. בואו נתחיל מהבסיס ונראה איך זה מתפתח.` : `${hi()}איזה כיף לשמוע! האנרגיה הזאת בדיוק מה שצריך. בואו נתחיל.`); });
+}
+function moodPicker(host, cur, cb) {
+  MOODS.forEach(([e, t], i) => { const b = el('button', { class: 'mood', 'aria-pressed': cur === i ? 'true' : 'false', type: 'button' }); b.innerHTML = `<span aria-hidden="true">${e}</span><small>${t}</small>`; b.addEventListener('click', () => { host.querySelectorAll('.mood').forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); cb(i); }); host.appendChild(b); });
+}
+const teacher = t => `<div class="teacher"><div class="av" aria-hidden="true">מ</div><p>${t}</p></div>`;
+
+/* ================= chapter ================= */
+function renderChapter(c) {
+  const idx = CHAPTERS.indexOf(c);
+  const v = el('div', { class: 'view' });
+  v.innerHTML = `<p class="eyebrow">פרק ${idx + 1} מתוך ${CHAPTERS.length}</p><h1>${c.title}</h1>${c.html}<div id="qhost"></div>
+  <div class="navfoot">${idx > 0 ? `<button class="btn ghost" data-go="${CHAPTERS[idx - 1].id}">הפרק הקודם</button>` : '<span></span>'}${idx < CHAPTERS.length - 1 ? `<button class="btn" data-go="${CHAPTERS[idx + 1].id}">הפרק הבא</button>` : '<button class="btn" data-go="report">לדוח שלי</button>'}</div>`;
+  view.appendChild(v);
+  v.querySelectorAll('.widget').forEach(w => { const f = W[w.dataset.w]; if (f) { const api = f(w) || {}; active.push(api); } });
+  requestAnimationFrame(() => active.forEach(a => a.start && a.start()));
+  renderQuizIntro(c, $('#qhost', v));
+}
+
+/* ================= quiz ================= */
+function renderQuizIntro(c, host) {
+  const d = chs(c.id);
+  host.innerHTML = `<section class="panel quiz"><p class="eyebrow">בוחן הבנה · 10 שאלות</p><h2>בודקים את ההבנה</h2>
+  <p>לפני שמתחילים: עד כמה אתם מרגישים בטוחים בנושא הזה?</p>
+  <div class="controls"><label for="conf">פחות בטוח/ה <input id="conf" type="range" min="1" max="5" value="${d.conf || 3}"> מאוד בטוח/ה</label></div>
+  ${d.best != null ? `<p>הציון הטוב ביותר שלכם עד עכשיו: <b>${d.best}/10</b>. אפשר לנסות שוב.</p>` : ''}
+  <div><button class="btn heat" id="qstart">להתחלת הבוחן</button></div></section>`;
+  $('#qstart', host).addEventListener('click', () => { d.conf = +$('#conf', host).value; save(); runQuiz(c, host); });
+}
+function shuffleQ(q) { const idx = q.o.map((_, i) => i); for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; } return { q: q.q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a), e: q.e }; }
+function runQuiz(c, host) {
+  const qs = c.quiz.map(shuffleQ); let i = 0; const res = [];
+  const panel = el('section', { class: 'panel quiz' }); host.innerHTML = ''; host.appendChild(panel);
+  const show = () => {
+    const q = qs[i];
+    panel.innerHTML = `<div class="dots" aria-hidden="true">${qs.map((_, k) => `<span class="dot ${k < res.length ? (res[k] ? 'ok' : 'no') : ''} ${k === i ? 'cur' : ''}"></span>`).join('')}</div>
+    <p class="eyebrow">שאלה ${i + 1} מתוך ${qs.length}</p><p class="qtext">${q.q}</p>
+    <div class="opts">${q.o.map((o, k) => `<button class="opt" data-k="${k}"><span class="lt">${'אבגד'[k]}.</span><span>${o}</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+    panel.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+      const k = +b.dataset.k, ok = k === q.a; res.push(ok);
+      panel.querySelectorAll('.opt').forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok'); else if (j === k) x.classList.add('no'); });
+      $('#fb', panel).innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><strong>${ok ? pick(PRAISE) : pick(ENCOURAGE)}</strong><span>${q.e}</span></div><div style="margin-top:10px"><button class="btn" id="qnext">${i < qs.length - 1 ? 'לשאלה הבאה' : 'לסיכום הבוחן'}</button></div>`;
+      panel.querySelectorAll('.dot')[i].classList.add(ok ? 'ok' : 'no');
+      const nb = $('#qnext', panel); nb.focus({ preventScroll: true });
+      nb.addEventListener('click', () => { i++; if (i < qs.length) { show(); panel.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); } else finish(); });
+    }));
+  };
+  const finish = () => {
+    const score = res.filter(Boolean).length, d = chs(c.id);
+    d.last = score; d.best = Math.max(d.best || 0, score); d.tries++; save(); buildNav();
+    nav.querySelectorAll('.navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === c.id ? 'true' : 'false'));
+    const msg = score === 10 ? `${hi()}10 מתוך 10! שליטה מלאה בפרק. אתם מוכנים להמשיך, ואולי גם לעזור לחבר/ה בכיתה.` :
+      score >= 8 ? `${hi()}תוצאה מצוינת. ההבנה שלכם יציבה. עברו על ההסברים של השאלות שפספסתם, וזהו.` :
+      score >= 6 ? `${hi()}בסיס טוב. יש כמה נקודות שעוד לא התיישבו. חזרו לחלקים הרלוונטיים בפרק, הפעילו שוב את ההדמיה ונסו את הבוחן פעם נוספת.` :
+      `${hi()}זה בדיוק השלב שבו לומדים הכי הרבה. אל תוותרו! קראו שוב את הפרק לאט, עם ההדמיות, ונסו שוב. אם משהו לא מסתדר, כתבו לי במשוב למטה.`;
+    const calib = d.conf >= 4 && score < 6 ? 'הרגשתם בטוחים, אבל הבוחן הראה שיש פערים. זה מידע חשוב: כדאי לבדוק איפה ההבנה עדיין לא מדויקת.' : d.conf <= 2 && score >= 8 ? 'לפני הבוחן הרגשתם לא בטוחים, ובפועל הצלחתם מאוד. אתם יודעים יותר ממה שאתם חושבים!' : '';
+    const wrong = qs.map((q, k) => [q, res[k]]).filter(x => !x[1]);
+    panel.innerHTML = `<p class="eyebrow">סיכום הבוחן</p><div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap"><span class="score">${score}/10</span><span>${score >= 8 ? 'שליטה טובה' : score >= 6 ? 'בדרך הנכונה' : 'שווה לחזור על הפרק'}</span></div>
+    ${teacher(msg + (calib ? ' ' + calib : ''))}
+    ${wrong.length ? `<details><summary style="cursor:pointer;font-weight:700">השאלות לחזרה (${wrong.length})</summary><ol style="margin-top:8px">${wrong.map(([q]) => `<li><b>${q.q}</b><br>תשובה נכונה: ${q.o[q.a]}<br><span style="color:var(--muted)">${q.e}</span></li>`).join('')}</ol></details>` : ''}
+    <div class="controls"><button class="btn ghost" id="qagain">ניסיון נוסף</button></div>
+    <hr style="border:0;border-top:1px solid var(--line);width:100%">
+    <h2>איך הרגשתם בפרק הזה?</h2><div class="moods" id="cm"></div>
+    <p style="font-weight:700">מה היה קשה? (אפשר לבחור כמה)</p><div class="chips" id="hc"></div>
+    <label for="note" style="font-weight:700">משהו שתרצו לספר לי או לשאול?</label><textarea id="note" placeholder="למשל: לא הבנתי למה זרז לא משנה את ΔH">${d.note || ''}</textarea>
+    <div><button class="btn" id="fsend">שליחת המשוב</button></div><div id="freply" aria-live="polite"></div>`;
+    $('#qagain', panel).addEventListener('click', () => runQuiz(c, host));
+    moodPicker($('#cm', panel), d.mood, m => { d.mood = m; save(); });
+    const hc = $('#hc', panel);
+    HARD.forEach(h => { const b = el('button', { class: 'chip', type: 'button', 'aria-pressed': d.hard.includes(h) ? 'true' : 'false' }, h); b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on ? 'true' : 'false'); d.hard = on ? d.hard.concat(h) : d.hard.filter(x => x !== h); save(); }); hc.appendChild(b); });
+    $('#fsend', panel).addEventListener('click', () => {
+      d.note = $('#note', panel).value.trim(); save();
+      const parts = [];
+      if (d.mood == null) parts.push('תודה! אם תרצו, סמנו גם איך הרגשתם. זה עוזר לי להתאים את השיעורים.');
+      else if (d.mood <= 1) parts.push(`${hi()}תודה ששיתפתם. תחושת תסכול או בלבול היא חלק טבעי מלמידה של נושא מופשט, והיא לא אומרת שאתם "לא טובים בכימיה".`);
+      else if (d.mood === 2) parts.push(`${hi()}תודה על המשוב.`);
+      else parts.push(`${hi()}שמח לשמוע שהרגשתם טוב בפרק!`);
+      if (d.hard.includes('החישובים')) parts.push('לגבי החישובים: נסו את המחשבון בפרק, קודם במחברת ואז לבדוק. בשיעור נתרגל יחד עוד דוגמאות.');
+      if (d.hard.includes('המושגים')) parts.push('לגבי המושגים: כדאי לכתוב לכל מושג משפט אחד במילים שלכם ודוגמה אחת מהיום־יום.');
+      if (d.hard.includes('הגרפים')) parts.push('לגבי הגרפים: הפעילו שוב את סרטון האנימציה והשהו בכל שלב. שאלו את עצמכם מה מייצג כל ציר.');
+      if (d.hard.includes('ההדמיות')) parts.push('אם ההדמיות לא היו ברורות, כתבו לי מה בדיוק. אשפר אותן.');
+      if (d.hard.includes('השאלות בבוחן')) parts.push('אם ניסוח שאלה בבוחן היה מבלבל, ציינו איזו. המשוב הזה עוזר לי.');
+      if (d.hard.includes('הכל היה ברור')) parts.push('מעולה! אתם מוזמנים להמשיך לפרק הבא.');
+      if (d.note) parts.push('קיבלתי את ההערה שלכם. היא תופיע בדוח שאתם שולחים לי, ואתייחס אליה בשיעור.');
+      $('#freply', panel).innerHTML = teacher(parts.join(' '));
+    });
+  };
+  show();
+}
+
+/* ================= report ================= */
+function reportText() {
+  const L = [];
+  L.push('דוח למידה: אנרגיה בקצב הכימיה');
+  L.push('שם: ' + (S.name || '(לא הוזן)'));
+  L.push('תאריך: ' + new Date().toLocaleDateString('he-IL'));
+  if (S.startMood != null) L.push('הרגשה בתחילת היחידה: ' + MOODS[S.startMood][1]);
+  L.push('');
+  CHAPTERS.forEach((c, i) => {
+    const d = S.ch[c.id];
+    L.push(`פרק ${i + 1}: ${c.title}`);
+    if (!d || d.best == null) { L.push('  טרם נבחן'); L.push(''); return; }
+    L.push(`  ציון אחרון: ${d.last}/10 | ציון הטוב ביותר: ${d.best}/10 | ניסיונות: ${d.tries}`);
+    if (d.conf) L.push(`  ביטחון לפני הבוחן: ${d.conf}/5`);
+    if (d.mood != null) L.push('  הרגשה: ' + MOODS[d.mood][1]);
+    if (d.hard && d.hard.length) L.push('  היה קשה: ' + d.hard.join(', '));
+    if (d.note) L.push('  הערה: ' + d.note);
+    L.push('');
+  });
+  const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null);
+  if (done.length) L.push(`ממוצע (ציון הטוב ביותר): ${(done.reduce((a, c) => a + S.ch[c.id].best, 0) / done.length).toFixed(1)}/10 ב-${done.length} פרקים`);
+  return L.join('\n');
+}
+function renderReport() {
+  const v = el('div', { class: 'view' });
+  const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
+  v.innerHTML = `<p class="eyebrow">סיכום</p><h1>הדוח שלי למורה</h1>
+  <p class="lead">${done === CHAPTERS.length ? `${hi()}השלמתם את כל ${CHAPTERS.length} הפרקים. כל הכבוד על ההתמדה!` : `השלמתם ${done} מתוך ${CHAPTERS.length} פרקים. אפשר לשלוח דוח חלקי ולהמשיך אחר כך.`}</p>
+  <section class="panel"><h2>שליחת הדוח</h2><p>העתיקו את הדוח והדביקו אותו בהודעה למורה (בקלאסרום, במייל או בוואטסאפ), או שמרו אותו כקובץ.</p>
+  <div class="report" id="rep" tabindex="0"></div>
+  <div class="controls"><button class="btn" id="rcopy">העתקת הדוח</button><button class="btn ghost" id="rdl">שמירה כקובץ</button><span id="rmsg" aria-live="polite"></span></div></section>
+  <section class="panel"><h2>מחשבה אחרונה</h2><label for="final" style="font-weight:700">מה הדבר החשוב ביותר שלמדתם ביחידה הזו?</label><textarea id="final">${S.final || ''}</textarea></section>
+  <div><button class="btn ghost" id="rreset">איפוס כל ההתקדמות</button> <span id="rconf"></span></div>`;
+  view.appendChild(v);
+  const upd = () => { $('#rep', v).textContent = reportText() + (S.final ? '\n\nהדבר החשוב ביותר שלמדתי: ' + S.final : ''); };
+  upd();
+  $('#final', v).addEventListener('input', e => { S.final = e.target.value.trim(); save(); upd(); });
+  $('#rcopy', v).addEventListener('click', () => { const t = $('#rep', v).textContent; const sel = () => { const r = document.createRange(); r.selectNodeContents($('#rep', v)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('#rmsg', v).textContent = 'הטקסט מסומן. העתיקו עם Ctrl+C.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => { $('#rmsg', v).textContent = 'הדוח הועתק.'; }, sel); else sel(); });
+  $('#rdl', v).addEventListener('click', () => { try { const b = new Blob(['﻿' + $('#rep', v).textContent], { type: 'text/plain;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'דוח-אנרגיה-' + (S.name || 'תלמיד') + '.txt'; document.body.appendChild(a); a.click(); a.remove(); $('#rmsg', v).textContent = 'אם הקובץ לא ירד, השתמשו בכפתור ההעתקה.'; } catch (e) { $('#rmsg', v).textContent = 'השמירה לא זמינה כאן. השתמשו בכפתור ההעתקה.'; } });
+  $('#rreset', v).addEventListener('click', e => { const c = $('#rconf', v); if (!c.dataset.ask) { c.dataset.ask = '1'; c.innerHTML = 'בטוחים? כל הציונים והמשובים יימחקו. <button class="btn heat" id="rreset2">כן, לאפס</button>'; $('#rreset2', v).addEventListener('click', () => { S = { name: '', startMood: null, ch: {} }; save(); buildNav(); go('home'); }); } });
+}
+
+/* ================= boot ================= */
+$('#themebtn').addEventListener('click', () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; });
+let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rz); rz = setTimeout(() => { active.forEach(a => { if (a.stop && a.start) { a.stop(); a.start(); } }); }, 250); });
+buildNav();
+const startId = (location.hash || '').slice(1);
+go(['home', 'report'].concat(CHAPTERS.map(c => c.id)).includes(startId) ? startId : 'home', true);
+</script></body></html>
