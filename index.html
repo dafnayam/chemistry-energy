@@ -2,58 +2,66 @@
 <title>אנרגיה בקצב הכימיה</title>
 <meta name="description" content="מערכת לימודית אינטראקטיבית: אנרגיה, אנתלפיה, קצב תגובה ואנטרופיה – כימיה 5 יח&quot;ל">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Suez+One&family=Assistant:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Burned&family=Secular+One&family=Rubik:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: a thermometer-scale chapter rail beside a reading column; cold blue = energy in, ember = energy out */
+/* Concept: "מצלמה תרמית" — the unit is a journey along a reaction-coordinate curve. A sticky energy-profile bar is the navigation;
+   heat is drawn with a thermal-imaging ramp (violet → magenta → orange → yellow). Light = lab graph paper, dark = infrared camera. */
 :root{
-  --paper:#f4f7fb; --surface:#ffffff; --sunk:#e9eef6; --ink:#16203a; --muted:#56627a; --line:#d5dde9;
-  --cold:#1f63c6; --cold-soft:#dfeafc; --heat:#cf4a12; --heat-soft:#fde6da;
-  --good:#23824a; --good-soft:#dcf3e4; --bad:#b8322b; --bad-soft:#fbe1df;
-  --focus:#1f63c6;
-  --f-display:"Suez One","Assistant",Georgia,serif;
-  --f-body:"Assistant","Segoe UI",Arial,sans-serif;
+  --paper:#f2f5fa; --surface:#ffffff; --sunk:#e8edf5; --ink:#11182c; --muted:#56617c; --line:#d3dbe8; --grid:rgba(43,89,195,.07);
+  --cold:#2b59c3; --cold-soft:#e1e9fb; --heat:#d9480f; --heat-soft:#fde7dc;
+  --t1:#4b23b0; --t2:#c0237a; --t3:#e2531b; --t4:#f0a500;
+  --good:#1f8a4c; --good-soft:#dbf3e4; --bad:#c0352c; --bad-soft:#fbe2df; --focus:#2b59c3;
+  --glow:rgba(226,83,27,.0); --hookbg:#141b33;
+  --f-burn:"Rubik Burned","Secular One","Rubik",sans-serif;
+  --f-display:"Secular One","Rubik",Arial,sans-serif;
+  --f-body:"Rubik","Segoe UI",Arial,sans-serif;
   --f-mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
-  --r:10px;
-  color-scheme:light;
+  --r:12px; color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#0e1422; --surface:#161f33; --sunk:#1c2740; --ink:#e6ebf5; --muted:#9ba8c0; --line:#2b3754;
-  --cold:#6ea8ff; --cold-soft:#1b2d50; --heat:#ff8d55; --heat-soft:#3d2316;
-  --good:#5fd38a; --good-soft:#163524; --bad:#ff7a70; --bad-soft:#3d1c1a; --focus:#6ea8ff; color-scheme:dark}}
+  --paper:#090b17; --surface:#121629; --sunk:#1a2038; --ink:#eef1fb; --muted:#9aa4c4; --line:#262e4d; --grid:rgba(120,140,255,.05);
+  --cold:#7aa2ff; --cold-soft:#18234a; --heat:#ff7a3d; --heat-soft:#3a1c12;
+  --t1:#6a3bff; --t2:#ff3d9a; --t3:#ff7a3d; --t4:#ffd23f;
+  --good:#5ee09a; --good-soft:#12301f; --bad:#ff7b73; --bad-soft:#3c1a19; --focus:#7aa2ff; --glow:rgba(255,122,61,.35); --hookbg:#1c2342; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#0e1422; --surface:#161f33; --sunk:#1c2740; --ink:#e6ebf5; --muted:#9ba8c0; --line:#2b3754;
-  --cold:#6ea8ff; --cold-soft:#1b2d50; --heat:#ff8d55; --heat-soft:#3d2316;
-  --good:#5fd38a; --good-soft:#163524; --bad:#ff7a70; --bad-soft:#3d1c1a; --focus:#6ea8ff; color-scheme:dark}
+  --paper:#090b17; --surface:#121629; --sunk:#1a2038; --ink:#eef1fb; --muted:#9aa4c4; --line:#262e4d; --grid:rgba(120,140,255,.05);
+  --cold:#7aa2ff; --cold-soft:#18234a; --heat:#ff7a3d; --heat-soft:#3a1c12;
+  --t1:#6a3bff; --t2:#ff3d9a; --t3:#ff7a3d; --t4:#ffd23f;
+  --good:#5ee09a; --good-soft:#12301f; --bad:#ff7b73; --bad-soft:#3c1a19; --focus:#7aa2ff; --glow:rgba(255,122,61,.35); --hookbg:#1c2342; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{background:var(--paper);color:var(--ink)}
-body{font-family:var(--f-body);font-size:17px;line-height:1.65;margin:0}
-.app{display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;max-width:1180px;margin:0 auto;padding:24px 20px 60px}
-@media (max-width:860px){.app{grid-template-columns:minmax(0,1fr);gap:16px;padding:12px 16px 48px}}
+body{font-family:var(--f-body);font-size:17px;line-height:1.7;margin:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.thermal{background:linear-gradient(90deg,var(--t1),var(--t2),var(--t3),var(--t4))}
 
-/* ---------- rail ---------- */
-.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;display:flex;flex-direction:column;gap:14px}
-@media (max-width:860px){.rail{position:static}}
-.brand{font-family:var(--f-display);font-size:1.55rem;line-height:1.15;margin:0;text-wrap:balance}
-.brand small{display:block;font-family:var(--f-body);font-size:.85rem;color:var(--muted);font-weight:600;margin-top:4px}
-.thermo{display:grid;grid-template-columns:18px minmax(0,1fr);gap:0 12px;position:relative}
-.tube{grid-row:1/-1;grid-column:1;position:relative;width:12px;margin:6px auto;border-radius:8px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
-.mercury{position:absolute;inset-inline:0;top:0;height:0;background:linear-gradient(180deg,var(--cold),var(--heat));transition:height .6s ease}
-.navbtn{grid-column:2;display:flex;align-items:baseline;gap:10px;text-align:right;background:none;border:0;padding:7px 10px;border-radius:8px;color:var(--ink);font:inherit;font-size:.98rem;cursor:pointer;position:relative}
-.navbtn:hover{background:var(--sunk)}
-.navbtn[aria-current="true"]{background:var(--surface);box-shadow:0 0 0 1px var(--line);font-weight:700}
-.navbtn .tick{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);min-width:1.6em}
-.navbtn .st{margin-inline-start:auto;font-size:.78rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-.navbtn .st.ok{color:var(--good)}
-@media (max-width:860px){
-  .thermo{display:flex;overflow-x:auto;gap:6px;padding-bottom:6px}
-  .tube{display:none}
-  .navbtn{flex:0 0 auto;border:1px solid var(--line);background:var(--surface)}
-}
-.toolrow{display:flex;gap:8px;flex-wrap:wrap}
-.chipbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
-.chipbtn:hover{border-color:var(--cold)}
+/* ---------- top bar: reaction coordinate ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topin{max-width:1120px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font:inherit;font-family:var(--f-display);font-size:1.25rem;line-height:1.1;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:center;gap:10px}
+.brand i{display:block;width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,var(--t1),var(--t2),var(--t3),var(--t4),var(--t1));box-shadow:0 0 18px var(--glow)}
+.tools{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
+.chipbtn,.navbtn.pill{font:inherit;font-size:.85rem;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chipbtn:hover,.navbtn.pill:hover{border-color:var(--heat)}
+.navbtn.pill[aria-current="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.coord{max-width:1120px;margin:0 auto;padding:0 20px;overflow-x:auto;scrollbar-width:thin}
+.track{position:relative;min-width:700px;height:86px}
+.track svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.navbtn.st{position:absolute;transform:translate(-50%,-50%);background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font:inherit;font-size:.74rem;font-weight:600;white-space:nowrap}
+.navbtn.st .dotc{width:16px;height:16px;border-radius:50%;background:var(--surface);border:2.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:.55rem;color:var(--muted);transition:transform .2s}
+.navbtn.st.done .dotc{background:var(--heat);border-color:var(--heat);color:var(--surface)}
+.navbtn.st.ace .dotc{background:var(--t4);border-color:var(--t4)}
+.navbtn.st:hover .dotc{transform:scale(1.25)}
+.navbtn.st[aria-current="true"]{color:var(--ink)}
+.navbtn.st[aria-current="true"] .dotc{width:22px;height:22px;border-color:var(--heat);box-shadow:0 0 0 5px var(--heat-soft),0 0 18px var(--glow)}
+.navbtn.st .lbl{position:absolute;top:22px;left:50%;transform:translateX(-50%)}
+.navbtn.st[aria-current="true"] .lbl{top:26px;font-weight:800}
+.navbtn.st.up .lbl{top:auto;bottom:22px}
+.navbtn.st.up[aria-current="true"] .lbl{bottom:26px}
 
+.app{max-width:1120px;margin:0 auto;padding:28px 20px 70px}
+html{scroll-padding-top:150px}
+@media (max-width:700px){.app{padding:18px 16px 56px}.topin{padding:8px 16px 0}.coord{padding:0 8px}.top{position:static}html{scroll-padding-top:12px}.chipbtn,.navbtn.pill{font-size:.78rem;padding:3px 10px}.brand{font-size:1.1rem}}
 /* ---------- main ---------- */
 main{min-width:0}
 .view{display:flex;flex-direction:column;gap:22px}
@@ -187,16 +195,98 @@ textarea{width:100%;min-height:80px;resize:vertical}
 .fnav,.fknow{justify-content:center}
 @media (prefers-reduced-motion:reduce){.fin{transition:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===================== v3 layer ===================== */
+main{min-width:0;max-width:820px;margin:0 auto}
+h1{font-family:var(--f-display);font-weight:400;letter-spacing:-.01em}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.5rem}
+.eyebrow{font-size:.85rem;letter-spacing:0;color:var(--heat);font-weight:800}
+.hook{position:relative;border:0;background:var(--hookbg);color:#eef1fb;border-radius:16px;padding:20px 22px;overflow:hidden}
+.hook::before{content:"";position:absolute;inset:0 0 auto 0;height:4px}
+.hook::before{background:linear-gradient(90deg,var(--t1),var(--t2),var(--t3),var(--t4))}
+.hook b{color:#ffd23f;font-size:.85rem;font-weight:800}
+.hook p{font-size:1.12rem;font-weight:500}
+.key{border-inline-start:0;border-radius:14px;background:var(--cold-soft);position:relative;padding:14px 18px 14px 18px;padding-inline-start:52px}
+.key::before{content:"✦";position:absolute;inset-inline-start:16px;top:12px;font-size:1.2rem;color:var(--cold)}
+.warn{border-inline-start:0;border-radius:14px;background:var(--heat-soft);position:relative;padding:14px 18px;padding-inline-start:52px}
+.warn::before{content:"!";position:absolute;inset-inline-start:16px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--heat);color:var(--surface);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.eq{background:var(--surface);border:1px dashed var(--line);border-radius:10px}
+.widget{border-radius:18px;box-shadow:0 12px 30px -24px rgba(17,24,44,.45);position:relative}
+.widget::after{content:"";position:absolute;inset-inline:18px;top:-1px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--t1),var(--t2),var(--t3),var(--t4));opacity:.9}
+.wtag{letter-spacing:0;background:var(--ink);color:var(--paper)}
+.wtag.sim{background:var(--cold);color:var(--surface)}
+canvas{border-radius:12px}
+.btn{border-radius:999px;padding:8px 18px;transition:transform .15s,box-shadow .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px -8px var(--cold)}
+.btn.heat{background:linear-gradient(90deg,var(--t2),var(--t3));border-color:transparent;color:#fff}
+.btn.heat:hover:not(:disabled){box-shadow:0 8px 20px -8px var(--t3)}
+.caption{border-radius:12px;border-inline-start:3px solid var(--heat)}
+.panel{border-radius:18px}
+.panel.quiz{border-top:0;position:relative;overflow:hidden}
+.panel.quiz::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--t1),var(--t2),var(--t3),var(--t4))}
+.dots{gap:4px;flex-wrap:nowrap;background:var(--sunk);border-radius:999px;padding:4px}
+.dot{flex:1;height:10px;border:0;border-radius:999px;background:transparent}
+.dot.ok{background:linear-gradient(90deg,var(--t3),var(--t4))}.dot.no{background:var(--cold)}
+.dot.cur{background:var(--line)}
+.opt{border-radius:14px;padding:12px 16px;background:var(--surface)}
+.opt .lt{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sunk);color:var(--ink);font-size:.85rem}
+.opt.ok .lt{background:var(--good);color:var(--surface)}.opt.no .lt{background:var(--bad);color:var(--surface)}
+.score{font-family:var(--f-burn);font-size:3.4rem;background:linear-gradient(90deg,var(--t2),var(--t3),var(--t4));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* mood = energy thermometer */
+.moods{gap:0;flex-wrap:nowrap;border-radius:16px;overflow:hidden;border:1px solid var(--line);max-width:520px}
+.mood{flex:1;min-width:0;border:0;border-radius:0;padding:10px 4px;background:var(--surface);position:relative}
+.mood+.mood{border-inline-start:1px solid var(--line)}
+.mood::after{content:"";position:absolute;inset:auto 0 0 0;height:4px;opacity:.5}
+.mood:nth-child(1)::after{background:var(--t1)}.mood:nth-child(2)::after{background:var(--t2)}.mood:nth-child(3)::after{background:var(--t3)}.mood:nth-child(4)::after{background:var(--t4)}.mood:nth-child(5)::after{background:var(--t4)}
+.mood[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.mood[aria-pressed="true"] small{color:var(--paper)}
+.mood[aria-pressed="true"]::after{opacity:1;height:6px}
+.mood small{font-size:.72rem}
+.teacher{background:var(--surface);border:1px solid var(--line);border-radius:18px;position:relative}
+.teacher .av{background:conic-gradient(from 200deg,var(--t1),var(--t2),var(--t3),var(--t4),var(--t1));font-family:var(--f-display)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* chapter header */
+.chhead{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 18px;align-items:end}
+.stno{grid-row:1/3;font-family:var(--f-burn);font-size:clamp(4rem,12vw,6.6rem);line-height:.85;background:linear-gradient(160deg,var(--t1),var(--t2) 40%,var(--t3) 70%,var(--t4));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chhead h1{font-size:clamp(1.7rem,4.2vw,2.5rem)}
+.chmeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.tagp{font-size:.8rem;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted);background:var(--surface)}
+.tagp.ok{color:var(--good);border-color:var(--good)}
+/* home hero */
+.hero{position:relative;border-radius:24px;overflow:hidden;background:#0b0d1a;color:#f3f4fb;min-height:380px;display:flex;align-items:flex-end;isolation:isolate}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:0;background:transparent;z-index:-1}
+.herotext{padding:26px 26px 24px;display:flex;flex-direction:column;gap:12px;max-width:640px}
+.herotext .eyebrow{color:#ffd23f}
+.burn{font-family:var(--f-burn);font-weight:400;font-size:clamp(2.6rem,8vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 30px rgba(255,122,61,.45)}
+.herotext p.lead{color:#c9cee6;max-width:52ch}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero .btn.ghost{color:#fff;border-color:rgba(255,255,255,.4)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.homecard{border-radius:16px;padding:14px 16px;position:relative;overflow:hidden;gap:6px}
+.homecard .n{font-family:var(--f-burn);font-size:2rem;line-height:1;background:linear-gradient(160deg,var(--t2),var(--t3),var(--t4));-webkit-background-clip:text;background-clip:text;color:transparent}
+.homecard .meter{height:5px;border-radius:999px;background:var(--sunk);overflow:hidden;margin-top:auto}
+.homecard .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--t3),var(--t4))}
+.homecard:hover{border-color:var(--heat);transform:translateY(-2px)}
+.homecard{transition:transform .18s,border-color .18s}
+.thermobar{display:none}
+.fcard .ffront{border-radius:20px}
+.fback{border-radius:20px;background:var(--ink);color:var(--paper);border:0}
+.fback small{color:var(--t4)}
+.d0>.mnode .mtog{background:var(--ink);color:var(--paper)}
+.d1>.mnode .mtog{background:var(--surface);border-color:var(--heat)}
+.mgo{color:var(--heat)}
+.navfoot .btn{min-width:150px}
+@media (max-width:560px){.chhead{grid-template-columns:minmax(0,1fr)}.stno{grid-row:auto}.hero{min-height:420px}}
+@media (prefers-reduced-motion:reduce){.homecard,.btn{transition:none}}
+
 </style>
 </head><body>
-<div class="app">
-  <aside class="rail">
-    <p class="brand">אנרגיה בקצב הכימיה<small>כימיה 5 יח"ל · תשפ"ז</small></p>
-    <nav class="thermo" id="nav" aria-label="פרקים"><div class="tube" aria-hidden="true"><div class="mercury" id="mercury"></div></div></nav>
-    <div class="toolrow"><button class="chipbtn" id="themebtn" type="button">מצב בהיר / כהה</button></div>
-  </aside>
-  <main id="view" dir="rtl"></main>
-</div>
+<header class="top">
+  <div class="topin"><button class="brand" data-go="home" type="button"><i aria-hidden="true"></i>אנרגיה בקצב הכימיה</button>
+    <div class="tools" id="tools"><button class="chipbtn" id="themebtn" type="button">בהיר / כהה</button></div></div>
+  <nav class="coord" id="nav" aria-label="תחנות היחידה"><div class="track" id="track"></div></nav>
+</header>
+<div class="app"><main id="view" dir="rtl"></main></div>
 <script>
 const MEDIA_BASE = location.protocol === 'file:' ? 'https://noynovik-maker.github.io/chemistry-energy/' : '';
 const M = n => MEDIA_BASE + 'media/' + encodeURI(n);
@@ -1005,6 +1095,33 @@ W.entcalc = box => {
     $('#eout', box).innerHTML = `ΔS°<sub>surr</sub> = −(${H} × 1000) ÷ ${T} = <b>${fmt(Ss)} J/K</b><br>ΔS°<sub>univ</sub> = ${S} + (${fmt(Ss)}) = <b class="${U > 0 ? 'pos' : 'neg'}">${fmt(U)} J/K</b><br>${U > 0 ? 'ΔS<sub>univ</sub> > 0, ולכן התהליך ספונטני בטמפרטורה זו.' : U < 0 ? 'ΔS<sub>univ</sub> < 0, ולכן התהליך אינו ספונטני בטמפרטורה זו (התהליך ההפוך ספונטני).' : 'ΔS<sub>univ</sub> = 0.'}`; };
   box.addEventListener('input', upd); upd(); return {};
 };
+
+/* ================= hero: thermal camera energy landscape ================= */
+function HERO(cv) {
+  let W_, H_, t = 0, embers = [];
+  const ramp = ['#6a3bff', '#ff3d9a', '#ff7a3d', '#ffd23f'];
+  const curve = x => { const r = .62, p = .78, pk = .26; if (x < .2) return r; if (x > .8) return p; const xx = (x - .2) / .6; return xx < .5 ? r + (pk - r) * Math.pow(Math.sin(xx / .5 * Math.PI / 2), 2) : p + (pk - p) * Math.pow(Math.cos((xx - .5) / .5 * Math.PI / 2), 2); };
+  const init = () => { const r = fitCanvas(cv, 1); const box = cv.parentElement.getBoundingClientRect(); const dpr = window.devicePixelRatio || 1; W_ = box.width; H_ = box.height; cv.width = W_ * dpr; cv.height = H_ * dpr; cv.style.height = ''; cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); embers = Array.from({ length: 70 }, () => ({ x: Math.random() * W_, y: Math.random() * H_, v: .2 + Math.random() * .7, r: .6 + Math.random() * 2.2, c: ramp[1 + Math.floor(Math.random() * 3)] })); };
+  const draw = () => {
+    const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W_, H_);
+    const blobs = [[.18, .3, ramp[0]], [.55, .2, ramp[1]], [.8, .55, ramp[2]], [.35, .8, ramp[3]]];
+    blobs.forEach(([bx, by, col], k) => { const x = (bx + Math.sin(t * .0004 + k) * .06) * W_, y = (by + Math.cos(t * .0005 + k * 2) * .06) * H_, R = Math.max(W_, H_) * .45; const g = ctx.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, col + '55'); g.addColorStop(1, col + '00'); ctx.fillStyle = g; ctx.fillRect(0, 0, W_, H_); });
+    // energy curve
+    const X = x => W_ * (1 - x), Y = v => H_ * (.05 + v * .36);
+    const g = ctx.createLinearGradient(W_, 0, 0, 0); ramp.forEach((c, i) => g.addColorStop(i / 3, c));
+    ctx.lineWidth = 3; ctx.strokeStyle = g; ctx.beginPath(); for (let i = 0; i <= 200; i++) { const x = i / 200; i ? ctx.lineTo(X(x), Y(curve(x))) : ctx.moveTo(X(x), Y(curve(x))); } ctx.stroke();
+    ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(.02), Y(.62)); ctx.lineTo(X(.5), Y(.62)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('Ea', X(.42), Y(.47)); ctx.fillText('ΔH', X(.88), Y(.7));
+    const bxp = (Math.sin(t * .0007) * .5 + .5) * .9 + .05, by = Y(curve(bxp)) - 9;
+    const bg = ctx.createRadialGradient(X(bxp), by, 0, X(bxp), by, 26); bg.addColorStop(0, '#ffd23fcc'); bg.addColorStop(1, '#ffd23f00'); ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(X(bxp), by, 26, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(bxp), by, 6, 0, 6.283); ctx.fill();
+    embers.forEach(e => { e.y -= e.v; e.x += Math.sin((t + e.y * 20) * .002) * .3; if (e.y < -5) { e.y = H_ + 5; e.x = Math.random() * W_; } ctx.globalAlpha = .35 + .4 * (e.y / H_); ctx.fillStyle = e.c; ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, 6.283); ctx.fill(); });
+    ctx.globalAlpha = 1;
+    const sh = ctx.createLinearGradient(0, H_ * .35, 0, H_); sh.addColorStop(0, 'rgba(11,13,26,0)'); sh.addColorStop(1, 'rgba(11,13,26,.92)'); ctx.fillStyle = sh; ctx.fillRect(0, 0, W_, H_);
+  };
+  const L = loop(ts => { t = ts; draw(); });
+  return { start() { init(); if (RM) draw(); else L.start(); }, stop() { L.stop(); } };
+}
 /* ================= state ================= */
 const KEY = 'energy-chem-v1';
 let S = { name: '', startMood: null, ch: {} };
@@ -1022,21 +1139,29 @@ const hi = () => S.name ? S.name + ', ' : '';
 /* ================= nav ================= */
 const nav = $('#nav'), view = $('#view');
 let active = [];
+const NAVLBL = ['אנרגיה', 'מערכת', 'אנתלפיה', 'מצבי צבירה', 'חוק הס', 'קשרים', 'קצב', 'אנטרופיה'];
+const PROF = [0.70, 0.62, 0.50, 0.58, 0.40, 0.30, 0.12, 0.66];
 function buildNav() {
-  nav.querySelectorAll('.navbtn').forEach(b => b.remove());
-  const items = [['home', 'פתיחה', '0']].concat(CHAPTERS.map((c, i) => [c.id, c.title, String(i + 1)])).concat([['map', 'מפת חשיבה', '◇'], ['cards', 'כרטיסיות לחזרה', '▤'], ['report', 'הדוח שלי למורה', '✓']]);
-  items.forEach(([id, t, n]) => { const b = el('button', { class: 'navbtn', 'data-go': id }); const st = S.ch[id] && S.ch[id].best != null ? `<span class="st ${S.ch[id].best >= 8 ? 'ok' : ''}">${S.ch[id].best}/10</span>` : ''; b.innerHTML = `<span class="tick">${n}</span><span>${t}</span>${st}`; nav.appendChild(b); });
-  const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
-  $('#mercury').style.height = (done / CHAPTERS.length * 100) + '%';
+  const tr = $('#track'); tr.innerHTML = '';
+  const pts = CHAPTERS.map((c, i) => ({ x: 96 - i * (92 / (CHAPTERS.length - 1)), y: 14 + PROF[i] * 52 }));
+  const P = pts.map(p => [p.x * 10, p.y]);
+  let d = `M ${P[0][0]} ${P[0][1]}`;
+  for (let i = 0; i < P.length - 1; i++) { const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2; d += ` C ${p1[0] + (p2[0] - p0[0]) / 6} ${p1[1] + (p2[1] - p0[1]) / 6}, ${p2[0] - (p3[0] - p1[0]) / 6} ${p2[1] - (p3[1] - p1[1]) / 6}, ${p2[0]} ${p2[1]}`; }
+  tr.innerHTML = `<svg viewBox="0 0 1000 86" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="tg" x1="1" x2="0" y1="0" y2="0"><stop offset="0" style="stop-color:var(--t1)"/><stop offset=".4" style="stop-color:var(--t2)"/><stop offset=".75" style="stop-color:var(--t3)"/><stop offset="1" style="stop-color:var(--t4)"/></linearGradient></defs>
+  <path d="${d}" fill="none" stroke="url(#tg)" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+  CHAPTERS.forEach((c, i) => { const d = S.ch[c.id]; const done = d && d.best != null; const b = el('button', { class: 'navbtn st' + (done ? ' done' : '') + (done && d.best === 10 ? ' ace' : '') + (PROF[i] > .6 ? ' up' : ''), 'data-go': c.id, style: `left:${pts[i].x}%;top:${pts[i].y}px`, title: c.title, type: 'button' });
+    b.innerHTML = `<span class="dotc">${done ? d.best : i + 1}</span><span class="lbl">${NAVLBL[i]}</span>`; tr.appendChild(b); });
+  const tools = $('#tools'); tools.querySelectorAll('.pill').forEach(b => b.remove());
+  [['map', 'מפת חשיבה'], ['cards', 'כרטיסיות'], ['report', 'הדוח שלי']].reverse().forEach(([id, t]) => { const b = el('button', { class: 'navbtn pill', 'data-go': id, type: 'button' }, t); tools.prepend(b); });
 }
-nav.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+document.querySelector('.top').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 view.addEventListener('click', e => { const cb = e.target.closest('[data-cards]'); if (cb) { CF.ch = cb.dataset.cards; CF.i = 0; go('cards'); return; } const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 
 function go(id, noScroll) {
   active.forEach(w => w.stop && w.stop()); active = [];
   view.innerHTML = '';
   if (id === 'home') renderHome(); else if (id === 'report') renderReport(); else if (id === 'map') renderMap(); else if (id === 'cards') renderCards(); else renderChapter(CHAPTERS.find(c => c.id === id) || CHAPTERS[0]);
-  nav.querySelectorAll('.navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'));
+  document.querySelectorAll('.top .navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false')); const cur = document.querySelector('.navbtn.st[aria-current="true"]'); if (cur) { const co = $('#nav'); co.scrollLeft = cur.offsetLeft - co.clientWidth / 2; }
   try { history.replaceState(null, '', '#' + id); } catch (e) {}
   if (!noScroll) window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
 }
@@ -1044,10 +1169,13 @@ function go(id, noScroll) {
 /* ================= home ================= */
 function renderHome() {
   const v = el('div', { class: 'view' });
-  v.innerHTML = `<p class="eyebrow">כימיה 5 יח"ל · פרק אנרגיה ודינמיקה</p>
-  <h1>אנרגיה בקצב הכימיה</h1>
-  <div class="thermobar" aria-hidden="true"></div>
-  <p class="lead">ברוכים הבאים! לפניכם מערכת לימודית על אנרגיה בתהליכים כימיים: מהתנועה של חלקיק בודד, דרך ΔH וחוק הס, ועד השאלה למה תגובות קורות בכלל. בכל פרק יש הסברים, הדמיות שאפשר לשחק בהן, סרטוני אנימציה, ובסוף בוחן של 10 שאלות.</p>
+  const doneN = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
+  const nextC = CHAPTERS.find(c => !(S.ch[c.id] && S.ch[c.id].best != null)) || CHAPTERS[0];
+  v.innerHTML = `<section class="hero"><canvas id="heroCv" aria-hidden="true"></canvas><div class="herotext">
+  <p class="eyebrow">כימיה 5 יח"ל · אנרגיה ודינמיקה · תשפ"ז</p>
+  <h1 class="burn">אנרגיה בקצב הכימיה</h1>
+  <p class="lead">מסע של 8 תחנות לאורך עקומת האנרגיה: מהתנועה של חלקיק בודד, דרך ΔH וחוק הס, ועד השאלה למה תגובות קורות בכלל.</p>
+  <div class="cta"><button class="btn heat" data-go="${nextC.id}">${doneN ? 'ממשיכים לתחנה ' + (CHAPTERS.indexOf(nextC) + 1) : 'יוצאים לדרך: תחנה 1'}</button><button class="btn ghost" data-go="map">מפת חשיבה</button></div></div></section>
   <section class="panel"><h2>לפני שמתחילים</h2>
   <label for="sname" style="font-weight:700">איך קוראים לכם? <input id="sname" type="text" autocomplete="given-name" value="${(S.name || '').replace(/"/g, '&quot;')}" placeholder="שם פרטי"></label>
   <p style="font-weight:700">איך אתם מרגישים לקראת הנושא?</p><div class="moods" id="smood"></div><div id="smreply"></div></section>
@@ -1058,11 +1186,12 @@ function renderHome() {
   <li>עונים על 10 שאלות. אחרי כל תשובה מופיע הסבר, גם כשצדקתם.</li>
   <li>מספרים לי איך הרגשתם ומה היה קשה. אני קורא כל משוב.</li>
   <li>בסוף שולחים לי את "הדוח שלי למורה".</li></ol></section>
-  <section class="blk"><h2>כלי חזרה</h2><div class="homegrid"><button class="homecard" data-go="map"><span class="n">מבט על</span><b>מפת חשיבה</b><small>כל היחידה במפה אחת. לחיצה על ענף פותחת אותו.</small></button><button class="homecard" data-go="cards"><span class="n">${DECK.filter(d => !d.x).length} כרטיסים</span><b>כרטיסיות לחזרה</b><small>שאלה בצד אחד, תשובה בצד השני. מסמנים מה כבר יודעים.</small></button></div></section>
-  <section class="blk"><h2>הפרקים</h2><div class="homegrid" id="hg"></div></section>`;
+  <section class="blk"><h2>כלי חזרה</h2><div class="homegrid"><button class="homecard" data-go="map"><span class="n">◇</span><b>מפת חשיבה</b><small>כל היחידה במפה אחת. לחיצה על ענף פותחת אותו.</small></button><button class="homecard" data-go="cards"><span class="n">${DECK.filter(d => !d.x).length}</span><b>כרטיסיות לחזרה</b><small>שאלה בצד אחד, תשובה בצד השני. מסמנים מה כבר יודעים.</small></button></div></section>
+  <section class="blk"><h2>התחנות</h2><p class="lead">השלמתם ${doneN} מתוך ${CHAPTERS.length} תחנות.</p><div class="homegrid" id="hg"></div></section>`;
   view.appendChild(v);
   const hg = $('#hg', v);
-  CHAPTERS.forEach((c, i) => { const b = el('button', { class: 'homecard', 'data-go': c.id }); const r = S.ch[c.id] && S.ch[c.id].best != null ? ` · בוחן: ${S.ch[c.id].best}/10` : ''; b.innerHTML = `<span class="n">פרק ${i + 1}</span><b>${c.title}</b><small>${c.short}${r}</small>`; hg.appendChild(b); });
+  CHAPTERS.forEach((c, i) => { const b = el('button', { class: 'homecard', 'data-go': c.id }); const r = S.ch[c.id] && S.ch[c.id].best != null ? ` · בוחן: ${S.ch[c.id].best}/10` : ''; const best = S.ch[c.id] && S.ch[c.id].best != null ? S.ch[c.id].best : 0; b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><b>${c.title}</b><small>${c.short}${r}</small><span class="meter" aria-hidden="true"><i style="width:${best * 10}%"></i></span>`; hg.appendChild(b); });
+  const hc = $('#heroCv', v); if (hc) { const h = HERO(hc); active.push(h); requestAnimationFrame(() => h.start()); }
   $('#sname', v).addEventListener('input', e => { S.name = e.target.value.trim(); save(); });
   moodPicker($('#smood', v), S.startMood, m => { S.startMood = m; save(); $('#smreply', v).innerHTML = teacher(m <= 1 ? `${hi()}תודה על הכנות. אנרגיה נשמעת לפעמים מופשטת, ולכן בניתי כאן הרבה הדמיות. נתקדם צעד אחר צעד, ואפשר לחזור על כל פרק כמה שרוצים.` : m === 2 ? `${hi()}נשמע הוגן. בואו נתחיל מהבסיס ונראה איך זה מתפתח.` : `${hi()}איזה כיף לשמוע! האנרגיה הזאת בדיוק מה שצריך. בואו נתחיל.`); });
 }
@@ -1075,7 +1204,8 @@ const teacher = t => `<div class="teacher"><div class="av" aria-hidden="true">מ
 function renderChapter(c) {
   const idx = CHAPTERS.indexOf(c);
   const v = el('div', { class: 'view' });
-  v.innerHTML = `<p class="eyebrow">פרק ${idx + 1} מתוך ${CHAPTERS.length}</p><h1>${c.title}</h1>${c.html}${DECK.some(d => d.c === c.id) ? `<div class="cardlink"><div><b>חזרה מהירה בכרטיסיות</b><br><span>${DECK.filter(d => d.c === c.id && !d.x).length} כרטיסים לפרק הזה. מומלץ לפני הבוחן.</span></div><button class="btn ghost" data-cards="${c.id}">לכרטיסיות של הפרק</button></div>` : ''}<div id="qhost"></div>
+  const dd = S.ch[c.id];
+  v.innerHTML = `<header class="chhead"><span class="stno" aria-hidden="true">${String(idx + 1).padStart(2, '0')}</span><p class="eyebrow">תחנה ${idx + 1} מתוך ${CHAPTERS.length}</p><div><h1>${c.title}</h1><div class="chmeta"><span class="tagp">${c.short}</span>${dd && dd.best != null ? `<span class="tagp ${dd.best >= 8 ? 'ok' : ''}">בוחן: ${dd.best}/10</span>` : '<span class="tagp">בוחן: עוד לא</span>'}</div></div></header>${c.html}${DECK.some(d => d.c === c.id) ? `<div class="cardlink"><div><b>חזרה מהירה בכרטיסיות</b><br><span>${DECK.filter(d => d.c === c.id && !d.x).length} כרטיסים לפרק הזה. מומלץ לפני הבוחן.</span></div><button class="btn ghost" data-cards="${c.id}">לכרטיסיות של הפרק</button></div>` : ''}<div id="qhost"></div>
   <div class="navfoot">${idx > 0 ? `<button class="btn ghost" data-go="${CHAPTERS[idx - 1].id}">הפרק הקודם</button>` : '<span></span>'}${idx < CHAPTERS.length - 1 ? `<button class="btn" data-go="${CHAPTERS[idx + 1].id}">הפרק הבא</button>` : '<button class="btn" data-go="report">לדוח שלי</button>'}</div>`;
   view.appendChild(v);
   v.querySelectorAll('.widget').forEach(w => { const f = W[w.dataset.w]; if (f) { const api = f(w) || {}; active.push(api); } });
@@ -1114,7 +1244,7 @@ function runQuiz(c, host) {
   const finish = () => {
     const score = res.filter(Boolean).length, d = chs(c.id);
     d.last = score; d.best = Math.max(d.best || 0, score); d.tries++; save(); buildNav();
-    nav.querySelectorAll('.navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === c.id ? 'true' : 'false'));
+    document.querySelectorAll('.top .navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === c.id ? 'true' : 'false'));
     const msg = score === 10 ? `${hi()}10 מתוך 10! שליטה מלאה בפרק. אתם מוכנים להמשיך, ואולי גם לעזור לחבר/ה בכיתה.` :
       score >= 8 ? `${hi()}תוצאה מצוינת. ההבנה שלכם יציבה. עברו על ההסברים של השאלות שפספסתם, וזהו.` :
       score >= 6 ? `${hi()}בסיס טוב. יש כמה נקודות שעוד לא התיישבו. חזרו לחלקים הרלוונטיים בפרק, הפעילו שוב את ההדמיה ונסו את הבוחן פעם נוספת.` :
@@ -1199,7 +1329,7 @@ function renderReport() {
 }
 
 /* ================= boot ================= */
-$('#themebtn').addEventListener('click', () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; });
+$('#themebtn').addEventListener('click', () => { setTimeout(() => { buildNav(); }, 0); const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; });
 let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rz); rz = setTimeout(() => { active.forEach(a => { if (a.stop && a.start) { a.stop(); a.start(); } }); }, 250); });
 buildNav();
 const startId = (location.hash || '').slice(1);
