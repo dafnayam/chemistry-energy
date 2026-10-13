@@ -1177,7 +1177,7 @@ function renderHome() {
   <p class="lead">מסע של 8 תחנות לאורך עקומת האנרגיה: מהתנועה של חלקיק בודד, דרך ΔH וחוק הס, ועד השאלה למה תגובות קורות בכלל.</p>
   <div class="cta"><button class="btn heat" data-go="${nextC.id}">${doneN ? 'ממשיכים לתחנה ' + (CHAPTERS.indexOf(nextC) + 1) : 'יוצאים לדרך: תחנה 1'}</button><button class="btn ghost" data-go="map">מפת חשיבה</button></div></div></section>
   <section class="panel"><h2>לפני שמתחילים</h2>
-  <label for="sname" style="font-weight:700">איך קוראים לכם? <input id="sname" type="text" autocomplete="given-name" value="${(S.name || '').replace(/"/g, '&quot;')}" placeholder="שם פרטי"></label>
+  <label for="sname" style="font-weight:700">איך קוראים לכם? <input id="sname" type="text" autocomplete="given-name" value="${(S.name || '').replace(/"/g, '&quot;')}" placeholder="שם פרטי"></label>${NOTIFY_URL ? '<p style="font-size:.88rem;color:var(--muted)">שימו לב: אחרי שמזינים שם, המורה מקבל הודעה על הכניסה שלכם, על תוצאות הבחנים ועל המשוב שאתם שולחים.</p>' : ''}
   <p style="font-weight:700">איך אתם מרגישים לקראת הנושא?</p><div class="moods" id="smood"></div><div id="smreply"></div></section>
   ${PODCAST()}
   <section class="blk"><h2>איך עובדים כאן</h2>
@@ -1192,7 +1192,7 @@ function renderHome() {
   const hg = $('#hg', v);
   CHAPTERS.forEach((c, i) => { const b = el('button', { class: 'homecard', 'data-go': c.id }); const r = S.ch[c.id] && S.ch[c.id].best != null ? ` · בוחן: ${S.ch[c.id].best}/10` : ''; const best = S.ch[c.id] && S.ch[c.id].best != null ? S.ch[c.id].best : 0; b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><b>${c.title}</b><small>${c.short}${r}</small><span class="meter" aria-hidden="true"><i style="width:${best * 10}%"></i></span>`; hg.appendChild(b); });
   const hc = $('#heroCv', v); if (hc) { const h = HERO(hc); active.push(h); requestAnimationFrame(() => h.start()); }
-  $('#sname', v).addEventListener('input', e => { S.name = e.target.value.trim(); save(); });
+  $('#sname', v).addEventListener('input', e => { S.name = e.target.value.trim(); save(); clearTimeout(nameTimer); nameTimer = setTimeout(notifyEntry, 2500); });
   moodPicker($('#smood', v), S.startMood, m => { S.startMood = m; save(); $('#smreply', v).innerHTML = teacher(m <= 1 ? `${hi()}תודה על הכנות. אנרגיה נשמעת לפעמים מופשטת, ולכן בניתי כאן הרבה הדמיות. נתקדם צעד אחר צעד, ואפשר לחזור על כל פרק כמה שרוצים.` : m === 2 ? `${hi()}נשמע הוגן. בואו נתחיל מהבסיס ונראה איך זה מתפתח.` : `${hi()}איזה כיף לשמוע! האנרגיה הזאת בדיוק מה שצריך. בואו נתחיל.`); });
 }
 function moodPicker(host, cur, cb) {
@@ -1244,6 +1244,7 @@ function runQuiz(c, host) {
   const finish = () => {
     const score = res.filter(Boolean).length, d = chs(c.id);
     d.last = score; d.best = Math.max(d.best || 0, score); d.tries++; save(); buildNav();
+    notify('quiz', { chapter: c.title, score, details: `ניסיון ${d.tries}, ביטחון לפני הבוחן: ${d.conf || '-'}/5` });
     document.querySelectorAll('.top .navbtn').forEach(b => b.setAttribute('aria-current', b.dataset.go === c.id ? 'true' : 'false'));
     const msg = score === 10 ? `${hi()}10 מתוך 10! שליטה מלאה בפרק. אתם מוכנים להמשיך, ואולי גם לעזור לחבר/ה בכיתה.` :
       score >= 8 ? `${hi()}תוצאה מצוינת. ההבנה שלכם יציבה. עברו על ההסברים של השאלות שפספסתם, וזהו.` :
@@ -1266,6 +1267,7 @@ function runQuiz(c, host) {
     HARD.forEach(h => { const b = el('button', { class: 'chip', type: 'button', 'aria-pressed': d.hard.includes(h) ? 'true' : 'false' }, h); b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on ? 'true' : 'false'); d.hard = on ? d.hard.concat(h) : d.hard.filter(x => x !== h); save(); }); hc.appendChild(b); });
     $('#fsend', panel).addEventListener('click', () => {
       d.note = $('#note', panel).value.trim(); save();
+      notify('feedback', { chapter: c.title, score: d.last, details: [d.mood != null ? 'הרגשה: ' + MOODS[d.mood][1] : '', d.hard.length ? 'קשה: ' + d.hard.join(', ') : '', d.note ? 'הערה: ' + d.note : ''].filter(Boolean).join(' | ') });
       const parts = [];
       if (d.mood == null) parts.push('תודה! אם תרצו, סמנו גם איך הרגשתם. זה עוזר לי להתאים את השיעורים.');
       else if (d.mood <= 1) parts.push(`${hi()}תודה ששיתפתם. תחושת תסכול או בלבול היא חלק טבעי מלמידה של נושא מופשט, והיא לא אומרת שאתם "לא טובים בכימיה".`);
@@ -1331,6 +1333,22 @@ function renderReport() {
 /* ================= boot ================= */
 $('#themebtn').addEventListener('click', () => { setTimeout(() => { buildNav(); }, 0); const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; });
 let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rz); rz = setTimeout(() => { active.forEach(a => { if (a.stop && a.start) { a.stop(); a.start(); } }); }, 250); });
+/* ================= teacher notifications (Google Apps Script web app) ================= */
+const NOTIFY_URL = 'https://script.google.com/macros/s/AKfycbxyB4rh51E_-HveYOvXTh_hRbYMwjR94kSQN34TgeniNSUPgrIZD797NbNwrca05PKZPw/exec';
+function notify(type, data) {
+  if (!NOTIFY_URL || !S.name) return;
+  const body = Object.assign({ type, name: S.name.slice(0, 60), device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'טלפון' : 'מחשב', visits: S.visits || 1 }, data || {});
+  try { fetch(NOTIFY_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), keepalive: true }).catch(() => {}); } catch (e) {}
+}
+function notifyEntry() {
+  let sent = false; try { sent = sessionStorage.getItem('ec-entry') === '1'; } catch (e) {}
+  if (sent || !S.name) return;
+  try { sessionStorage.setItem('ec-entry', '1'); } catch (e) {}
+  const done = CHAPTERS.filter(c => S.ch[c.id] && S.ch[c.id].best != null).length;
+  notify('entry', { details: `השלים ${done} מתוך ${CHAPTERS.length} תחנות` });
+}
+let nameTimer;
+S.visits = (S.visits || 0) + 1; save();
 buildNav();
 const startId = (location.hash || '').slice(1);
 go(['home', 'report', 'map', 'cards'].concat(CHAPTERS.map(c => c.id)).includes(startId) ? startId : 'home', true);
@@ -1398,4 +1416,5 @@ document.addEventListener('keydown', e => {
   const v = view.querySelector('.view'); if (!v || !v._step || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
   if (e.key === 'ArrowLeft') { v._step(1); e.preventDefault(); } else if (e.key === 'ArrowRight') { v._step(-1); e.preventDefault(); } else if (e.key === ' ' && e.target.tagName !== 'BUTTON') { v._flip(); e.preventDefault(); }
 });
+notifyEntry();
 </script></body></html>
