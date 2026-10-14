@@ -488,7 +488,7 @@ quiz:[
 ]},
 /* ================= 6 ================= */
 {
-id:'bonds', title:'אנתלפיות קשר', short:'שבירה ויצירה של קשרים',
+id:'bonds', title:'אנתלפיות קשר – יחידת רשות', short:'שבירה ויצירה של קשרים',
 html:`
 <div class="hook"><b>שאלת פתיחה</b><p>אם בכל תגובה כימית שוברים קשרים ויוצרים קשרים חדשים, מה קובע אם בסוף התגובה אנרגיה תשתחרר או תיקלט?</p></div>
 <section class="blk"><h2>שבירה דורשת, יצירה משחררת</h2>
@@ -619,8 +619,7 @@ const MAP = {t:'אנרגיה בקצב הכימיה', k:[
  {t:'מצבי צבירה', go:'phases', k:[{t:'התכה ואידוי: אנדותרמיים'},{t:'קפיאה ועיבוי: אקסותרמיים'},{t:'אידוי (+40.7) ≫ התכה (+6.0) במים'},{t:'המראה = התכה + אידוי'},{t:'קשרים קוולנטיים לא נשברים'}]},
  {t:'חוק הס', go:'hess', k:[{t:'ΔH תלוי רק במצב ההתחלתי והסופי'},{t:'היפוך ניסוח → היפוך סימן'},{t:'הכפלת ניסוח → הכפלת ΔH'},{t:'מחברים שלבים ומבטלים חומרים'}]},
  {t:'אנתלפיות קשר', go:'bonds', k:[{t:'שבירה: אנדותרמית'},{t:'יצירה: אקסותרמית'},{t:'ΔH = Σ(broken) − Σ(formed)',f:1},{t:'רק כשכל החומרים בגז'}]},
- {t:'קצב תגובה', go:'rate', k:[{t:'מודל ההתנגשויות', k:[{t:'אנרגיה ≥ Ea'},{t:'כיוון מתאים'}]},{t:'Ea ותצמיד משופעל'},{t:'גורמים', k:[{t:'ריכוז'},{t:'טמפרטורה'},{t:'שטח פנים'},{t:'סוג המגיבים'}]},{t:'זרז: מוריד Ea, לא משנה ΔH'}]},
- {t:'אנטרופיה וספונטניות', go:'entropy', k:[{t:'מדד לפיזור אנרגיה וחלקיקים'},{t:'גז > נוזל > מוצק'},{t:'סימן ΔSsys: מצב צבירה, מולי גז'},{t:'ΔS(surr) = −ΔH / T',f:1},{t:'תהליך ספונטני כאשר ΔSuniv > 0'}]}
+ {t:'קצב תגובה', go:'rate', k:[{t:'מודל ההתנגשויות', k:[{t:'אנרגיה ≥ Ea'},{t:'כיוון מתאים'}]},{t:'Ea ותצמיד משופעל'},{t:'גורמים', k:[{t:'ריכוז'},{t:'טמפרטורה'},{t:'שטח פנים'},{t:'סוג המגיבים'}]},{t:'זרז: מוריד Ea, לא משנה ΔH'}]}
 ]};
 /* ================= helpers ================= */
 const $ = (s, r = document) => r.querySelector(s);
@@ -1144,7 +1143,7 @@ function renderChapter(c) {
   const v = el('div', { class: 'view' });
   const dd = S.ch[c.id];
   v.innerHTML = `<header class="chhead"><span class="stno" aria-hidden="true">${String(idx + 1).padStart(2, '0')}</span><p class="eyebrow">תחנה ${idx + 1} מתוך ${CHAPTERS.length}</p><div><h1>${c.title}</h1><div class="chmeta"><span class="tagp">${c.short}</span>${dd && dd.best != null ? `<span class="tagp ${dd.best >= 8 ? 'ok' : ''}">בוחן: ${dd.best}/10</span>` : '<span class="tagp">בוחן: עוד לא</span>'}</div></div></header>${c.html}${DECK.some(d => d.c === c.id) ? `<div class="cardlink"><div><b>חזרה מהירה בכרטיסיות</b><br><span>${DECK.filter(d => d.c === c.id && !d.x).length} כרטיסים לפרק הזה. מומלץ לפני הבוחן.</span></div><button class="btn ghost" data-cards="${c.id}">לכרטיסיות של הפרק</button></div>` : ''}<div id="qhost"></div>
-  <div class="navfoot">${idx > 0 ? `<button class="btn ghost" data-go="${CHAPTERS[idx - 1].id}">הפרק הקודם</button>` : '<span></span>'}${idx < CHAPTERS.length - 1 ? `<button class="btn" data-go="${CHAPTERS[idx + 1].id}">הפרק הבא</button>` : '<button class="btn" data-go="report">לדוח שלי</button>'}</div>`;
+  <div class="navfoot">${idx > 0 ? `<button class="btn ghost" data-go="${CHAPTERS[idx - 1].id}">הפרק הקודם</button>` : '<span></span>'}${idx < CHAPTERS.length - 1 ? `<button class="btn" data-go="${CHAPTERS[idx + 1].id === 'bonds' ? CHAPTERS[idx + 2].id : CHAPTERS[idx + 1].id].id}">הפרק הבא</button>` : '<button class="btn" data-go="report">לדוח שלי</button>'}</div>`;
   view.appendChild(v);
   v.querySelectorAll('.widget').forEach(w => { const f = W[w.dataset.w]; if (f) { const api = f(w) || {}; active.push(api); } });
   requestAnimationFrame(() => active.forEach(a => a.start && a.start()));
